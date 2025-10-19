@@ -147,7 +147,8 @@ public:
                    ShaderProgram * uvColor,
                    int method = 0,
                    bool useVulkan = false,
-                   VkCommandBuffer* vkCmd = nullptr);
+                   VkCommandBuffer* vkCmd = nullptr,
+                   VkDevice* vkDevice = nullptr);
 
     GLuint getname(unsigned long index);
     unsigned getTextureCount(){return TexNames.count();}

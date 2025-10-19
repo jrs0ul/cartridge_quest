@@ -2759,7 +2759,7 @@ void Game::render(bool useVulkan)
         case GAMESTATE_GAME   : DrawGameplay();         break;
     }
 
-    pics.drawBatch(&colorShader, &defaultShader, 666, useVulkan, vkCmd);
+    pics.drawBatch(&colorShader, &defaultShader, 666, useVulkan, vkCmd, vulkanDevice);
 
 }
 //-------------------------------------

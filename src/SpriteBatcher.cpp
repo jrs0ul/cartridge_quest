@@ -234,7 +234,8 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                               ShaderProgram * uvColor,
                               int method,
                               bool useVulkan,
-                              VkCommandBuffer* vkCmd){
+                              VkCommandBuffer* vkCmd,
+                              VkDevice*        vkDevice){
 
         switch(method){
               //TODO: complete VA
@@ -331,7 +332,7 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                     
 
                         drawVA(vertices.getData(), uvs.getData(), colors,
-                               uvs.count(), vertices.count(), currentShader, useVulkan, vkCmd);
+                               uvs.count(), vertices.count(), currentShader, useVulkan, vkCmd, vkDevice);
 
                         //printf("vertice count %d \n", (int)vertices.count());
                         //printf("uvs count %d \n", (int)uvs.count());
@@ -542,7 +543,7 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                 }*/
 
                 drawVA(vertices.getData(), uvs.getData(), colors,
-                       uvs.count(), vertices.count(), currentShader, useVulkan, vkCmd);
+                       uvs.count(), vertices.count(), currentShader, useVulkan, vkCmd, vkDevice);
 
                 //printf("vertice count %d \n", (int)vertices.count());
                 //printf("uvs count %d \n", (int)uvs.count());
