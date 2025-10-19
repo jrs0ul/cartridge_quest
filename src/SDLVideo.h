@@ -89,13 +89,14 @@ public:
     VkDevice*        getVkDevice(){return &vkDevice;}
     VkCommandBuffer* getVkCmd(){return &vkCommandBuffer;}
     VkRenderPass*    getVkRenderPass(){return &vkRenderPass;}
+    VkPhysicalDevice* getVKPhysicalDevice(){return &vkPhysicalDevice;}
 
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 private:
     VkImageView createImageView(VkImage& image, VkFormat format, VkImageAspectFlags aspectFlags);
     void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, 
                         VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, 
                         VkDeviceMemory& imageMemory);
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     void createSemaphore(VkSemaphore *semaphore);
 
 

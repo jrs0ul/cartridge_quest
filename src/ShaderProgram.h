@@ -17,6 +17,8 @@ class ShaderProgram
     VkPipelineLayout vkPipelineLayout;
 
 public:
+    VkBuffer         vkVertexBuffers[3];
+    VkDeviceMemory   vkVertexBuffersMemory[3];
 
     void create(bool useVulkan);
     void destroy();
@@ -25,7 +27,7 @@ public:
     //only for opengl
     void link();
     //for Vulkan only
-    void buildVkPipeline(VkDevice* device, VkRenderPass* pass);
+    void buildVkPipeline(VkDevice* device, VkPhysicalDevice* physical, VkRenderPass* pass, bool needUvs);
 
     void use(VkCommandBuffer* vkCmd = nullptr);
 

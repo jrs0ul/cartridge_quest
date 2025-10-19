@@ -159,9 +159,10 @@ public:
 
     bool doRumble;
 
-    VkDevice        * vulkanDevice;
-    VkRenderPass    * vkRenderPass;
-    VkCommandBuffer * vkCmd;
+    VkDevice         * vulkanDevice;
+    VkPhysicalDevice * vkPhysicalDevice;
+    VkRenderPass     * vkRenderPass;
+    VkCommandBuffer  * vkCmd;
 
     float MouseX;
     float MouseY;
@@ -280,7 +281,7 @@ private:
     void HelpScreenLogic();
     void EndingLogic();
     int PlayerCount();
-    void LoadShader(ShaderProgram* shader, const char* name, bool useShader);
+    void LoadShader(ShaderProgram* shader, const char* name, bool useVulkan, bool useUVS);
     void IntroScreenLogic();
     void PlayNewSong(const char* songName);
 

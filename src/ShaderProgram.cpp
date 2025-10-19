@@ -77,8 +77,59 @@ void ShaderProgram::link()
     }
 }
 
-void ShaderProgram::buildVkPipeline(VkDevice* device, VkRenderPass* pass)
+uint32_t findMemoryType(VkPhysicalDevice* vkPhysicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(*vkPhysicalDevice, &memProperties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+    {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+        {
+            return i;
+        }
+    }
+
+    throw std::runtime_error("failed to find suitable memory type!");
+}
+
+
+
+
+void ShaderProgram::buildVkPipeline(VkDevice* device, VkPhysicalDevice* physical, VkRenderPass* pass, bool needUvs)
+{
+    const int MAX_VERTEX_BUFFER_SIZE = sizeof(float) * 4 * 10000;
+
+    for (int i = 0; i < 3; ++i)
+    {
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size        = MAX_VERTEX_BUFFER_SIZE;
+        bufferInfo.usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateBuffer(*device, &bufferInfo, nullptr, &vkVertexBuffers[i]) != VK_SUCCESS) 
+        {
+            throw std::runtime_error("failed to create vertex buffer!");
+        }
+
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(*device, vkVertexBuffers[i], &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = findMemoryType(physical, memRequirements.memoryTypeBits, 
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+        if (vkAllocateMemory(*device, &allocInfo, nullptr, &vkVertexBuffersMemory[i]) != VK_SUCCESS) 
+        {
+            throw std::runtime_error("failed to allocate vertex buffer memory!");
+        }
+
+        vkBindBufferMemory(*device, vkVertexBuffers[i], vkVertexBuffersMemory[i], 0);
+    }
+
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -92,11 +143,61 @@ void ShaderProgram::buildVkPipeline(VkDevice* device, VkRenderPass* pass)
     vkCreatePipelineLayout(*device, &pipelineLayoutInfo, nullptr, &vkPipelineLayout);
 
 
+    std::vector<VkVertexInputBindingDescription> bindings;
+    std::vector<VkVertexInputAttributeDescription> attributes;
+
+
+    const int bindingCount = (needUvs) ? 3 : 2;
+
+    for (int i = 0; i < bindingCount; ++i)
+    {
+
+        VkVertexInputBindingDescription b = {};
+        b.binding = i;
+        b.stride = 0;
+        b.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        bindings.push_back(b);
+    }
+
+    //pos
+    VkVertexInputAttributeDescription positionAttribute = {};
+    positionAttribute.binding = 0;
+    positionAttribute.location = 0;
+    positionAttribute.format = VK_FORMAT_R32G32_SFLOAT;
+    positionAttribute.offset = 0;
+
+    //uvs
+    VkVertexInputAttributeDescription uvsAttribute = {};
+    uvsAttribute.binding = 1;
+    uvsAttribute.location = 1;
+    uvsAttribute.format = VK_FORMAT_R32G32_SFLOAT;
+    uvsAttribute.offset = 0;
+
+    //Color
+    VkVertexInputAttributeDescription colorAttribute = {};
+    colorAttribute.binding = (needUvs) ? 2 : 1;
+    colorAttribute.location = (needUvs) ? 2 : 1;
+    colorAttribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    colorAttribute.offset = 0;
+
+    attributes.push_back(positionAttribute);
+
+    if (needUvs)
+    {
+        attributes.push_back(uvsAttribute);
+    }
+
+    attributes.push_back(colorAttribute);
+
+
     VkPipelineVertexInputStateCreateInfo   vertexInputInfo;
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.pNext = nullptr;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
+    vertexInputInfo.pVertexBindingDescriptions = bindings.data();
+    vertexInputInfo.vertexBindingDescriptionCount = bindings.size();
+    vertexInputInfo.pVertexAttributeDescriptions = attributes.data();
+    vertexInputInfo.vertexAttributeDescriptionCount = attributes.size();
 
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly;

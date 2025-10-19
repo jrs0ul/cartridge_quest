@@ -4010,7 +4010,7 @@ void Game::ParseMessagesClientGot()
 
 
 //---------------------------------------
-void Game::LoadShader(ShaderProgram* shader, const char* name, bool useVulkan)
+void Game::LoadShader(ShaderProgram* shader, const char* name, bool useVulkan, bool useUVS)
 {
     shader->create(useVulkan);
 
@@ -4072,7 +4072,7 @@ void Game::LoadShader(ShaderProgram* shader, const char* name, bool useVulkan)
         frag.loadVK(FRAGMENT_SHADER, buf, vulkanDevice);
 
         shader->attach(frag);
-        shader->buildVkPipeline(vulkanDevice, vkRenderPass);
+        shader->buildVkPipeline(vulkanDevice, vkPhysicalDevice, vkRenderPass, useUVS);
     }
 
 }
@@ -4108,8 +4108,8 @@ void Game::init(bool useVulkan)
    }
         printf("Creating shaders...\n");
 
-        LoadShader(&defaultShader, "default", useVulkan);
-        LoadShader(&colorShader, "justcolor", useVulkan);
+        LoadShader(&defaultShader, "default", useVulkan, true);
+        LoadShader(&colorShader, "justcolor", useVulkan, false);
 
 
     if (!useVulkan)

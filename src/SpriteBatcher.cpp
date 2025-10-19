@@ -146,7 +146,8 @@ void PicsContainer::drawVA(void * vertices,
                            unsigned vertexCount,
                            ShaderProgram* shader,
                            bool useVulkan,
-                           VkCommandBuffer* vkCmd)
+                           VkCommandBuffer* vkCmd,
+                           VkDevice* vkDevice)
 {
     int attribID = 0;
     int ColorAttribID = 0;
@@ -182,10 +183,30 @@ void PicsContainer::drawVA(void * vertices,
     }
     else // VULKAN
     {
-        VkBuffer buf;
+        const int BUFFER_COUNT = (uvsCount) ? 3 : 2;
 
-        VkDeviceSize offset = 0;
-        vkCmdBindVertexBuffers(*vkCmd, 0, 1, &buf, &offset);
+        void* vertData;
+        vkMapMemory(*vkDevice, shader->vkVertexBuffersMemory[0], 0, vertexCount * sizeof(float) * 2, 0, &vertData);
+        memcpy(vertData, vertices, vertexCount * sizeof(float) * 2);
+
+        if (uvsCount)
+        {
+            void* uvsData;
+            vkMapMemory(*vkDevice, shader->vkVertexBuffersMemory[1], 0, sizeof(float) * vertexCount * 2, 0, &uvsData);
+            memcpy(uvsData, uvs, sizeof(float) * vertexCount * 2);
+        }
+
+        void* colorData;
+        vkMapMemory(*vkDevice,
+                    (uvsCount) ? shader->vkVertexBuffersMemory[2] : shader->vkVertexBuffersMemory[1],
+                    0, sizeof(float) * vertexCount * 4, 0, &colorData);
+        memcpy(colorData, colors, sizeof(float) * vertexCount * 4);
+
+        VkDeviceSize offsets[] = {0, 0, 0};
+        VkDeviceSize sizes[] = {vertexCount, (uvsCount) ? uvsCount : vertexCount, vertexCount};
+        VkDeviceSize strides[] = {0, 0, 0};
+
+        vkCmdBindVertexBuffers2(*vkCmd, 0, BUFFER_COUNT, shader->vkVertexBuffers, offsets, sizes, strides);
         vkCmdDraw(*vkCmd, vertexCount / 2, 1, 0, 0);
     }
 }
