@@ -4072,7 +4072,7 @@ void Game::LoadShader(ShaderProgram* shader, const char* name, bool useVulkan, b
         frag.loadVK(FRAGMENT_SHADER, buf, vulkanDevice);
 
         shader->attach(frag);
-        shader->buildVkPipeline(vulkanDevice, vkPhysicalDevice, vkRenderPass, useUVS);
+        shader->buildVkPipeline(vulkanDevice, vkPhysicalDevice, vkRenderPass, sys, useUVS);
     }
 
 }

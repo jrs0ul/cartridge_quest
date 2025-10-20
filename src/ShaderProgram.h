@@ -7,6 +7,8 @@
 #include <vulkan/vulkan.hpp>
 #include "Shader.h"
 
+#include "SysConfig.h"
+
 class ShaderProgram
 {
     GLuint program;
@@ -27,7 +29,11 @@ public:
     //only for opengl
     void link();
     //for Vulkan only
-    void buildVkPipeline(VkDevice* device, VkPhysicalDevice* physical, VkRenderPass* pass, bool needUvs);
+    void buildVkPipeline(VkDevice* device,
+                         VkPhysicalDevice* physical,
+                         VkRenderPass* pass,
+                         SystemConfig& config,
+                         bool needUvs);
 
     void use(VkCommandBuffer* vkCmd = nullptr);
 

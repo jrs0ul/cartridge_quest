@@ -186,8 +186,6 @@ void PicsContainer::drawVA(void * vertices,
     }
     else // VULKAN
     {
-        const int BUFFER_COUNT = (uvsCount) ? 3 : 2;
-
         void* vertData;
         vkMapMemory(*vkDevice, shader->vkVertexBuffersMemory[0], 0, vertexCount * sizeof(float) * 2, 0, &vertData);
         memcpy(vertData, vertices, vertexCount * sizeof(float) * 2);
@@ -220,6 +218,7 @@ void PicsContainer::drawVA(void * vertices,
         {
             vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], offsets);
         }
+
         vkCmdDraw(*vkCmd, vertexCount / 2, 1, 0, 0);
 
     }

@@ -96,7 +96,11 @@ uint32_t findMemoryType(VkPhysicalDevice* vkPhysicalDevice, uint32_t typeFilter,
 
 
 
-void ShaderProgram::buildVkPipeline(VkDevice* device, VkPhysicalDevice* physical, VkRenderPass* pass, bool needUvs)
+void ShaderProgram::buildVkPipeline(VkDevice* device,
+                                    VkPhysicalDevice* physical,
+                                    VkRenderPass* pass,
+                                    SystemConfig& config,
+                                    bool needUvs)
 {
     const int MAX_VERTEX_BUFFER_SIZE = sizeof(float) * 4 * 10000;
 
@@ -215,13 +219,14 @@ void ShaderProgram::buildVkPipeline(VkDevice* device, VkPhysicalDevice* physical
 
     VkRect2D scissor;
     scissor.offset = { 0, 0 };
-    scissor.extent = {640, 360};
+    scissor.extent = {config.ScreenWidth * config.screenScaleX,
+                      config.ScreenHeight * config.screenScaleY};
 
     VkViewport viewport;
     viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = 640;
-    viewport.height = 360;
+    viewport.y = config.ScreenHeight * config.screenScaleY;
+    viewport.width = config.ScreenWidth * config.screenScaleX;
+    viewport.height = -config.ScreenHeight * config.screenScaleY;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
