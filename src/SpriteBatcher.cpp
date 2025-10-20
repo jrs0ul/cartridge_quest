@@ -76,6 +76,8 @@ bool PicsContainer::load(const char* list, AAssetManager* assman)
         PicInfo[i].vframes = PicInfo[i].height/PicInfo[i].theight;
         PicInfo[i].hframes = PicInfo[i].width/PicInfo[i].twidth;
 
+
+        /* TODO: UNCOMMENT
         int filtras = GL_NEAREST;
         if (PicInfo[i].filter)
             filtras = GL_LINEAR;
@@ -93,6 +95,7 @@ bool PicsContainer::load(const char* list, AAssetManager* assman)
         else
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, naujas.width, naujas.height,
                          0, GL_RGB, GL_UNSIGNED_BYTE,naujas.data);
+        */
 
         naujas.destroy();
 
@@ -188,12 +191,14 @@ void PicsContainer::drawVA(void * vertices,
         void* vertData;
         vkMapMemory(*vkDevice, shader->vkVertexBuffersMemory[0], 0, vertexCount * sizeof(float) * 2, 0, &vertData);
         memcpy(vertData, vertices, vertexCount * sizeof(float) * 2);
+        vkUnmapMemory(*vkDevice, shader->vkVertexBuffersMemory[0]);
 
         if (uvsCount)
         {
             void* uvsData;
             vkMapMemory(*vkDevice, shader->vkVertexBuffersMemory[1], 0, sizeof(float) * vertexCount * 2, 0, &uvsData);
             memcpy(uvsData, uvs, sizeof(float) * vertexCount * 2);
+            vkUnmapMemory(*vkDevice, shader->vkVertexBuffersMemory[1]);
         }
 
         void* colorData;
@@ -201,13 +206,22 @@ void PicsContainer::drawVA(void * vertices,
                     (uvsCount) ? shader->vkVertexBuffersMemory[2] : shader->vkVertexBuffersMemory[1],
                     0, sizeof(float) * vertexCount * 4, 0, &colorData);
         memcpy(colorData, colors, sizeof(float) * vertexCount * 4);
+        vkUnmapMemory(*vkDevice, (uvsCount) ? shader->vkVertexBuffersMemory[2] : shader->vkVertexBuffersMemory[1]);
 
         VkDeviceSize offsets[] = {0, 0, 0};
-        VkDeviceSize sizes[] = {vertexCount, (uvsCount) ? uvsCount : vertexCount, vertexCount};
-        VkDeviceSize strides[] = {0, 0, 0};
 
-        vkCmdBindVertexBuffers2(*vkCmd, 0, BUFFER_COUNT, shader->vkVertexBuffers, offsets, sizes, strides);
+        vkCmdBindVertexBuffers(*vkCmd, 0, 1, &shader->vkVertexBuffers[0], offsets);
+        if (uvsCount)
+        {
+            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], offsets);
+            vkCmdBindVertexBuffers(*vkCmd, 2, 1, &shader->vkVertexBuffers[2], offsets);
+        }
+        else
+        {
+            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], offsets);
+        }
         vkCmdDraw(*vkCmd, vertexCount / 2, 1, 0, 0);
+
     }
 }
 //----------------------------------------------------------
@@ -305,31 +319,28 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                     {
                         //let's draw old stuff
                         if ((texIndex >= 0) && (texIndex < (long)count())){
+                            /* TODO: UNCOMMENT
                             glBindTexture(GL_TEXTURE_2D, TexNames[texIndex]);
-
+                            */
 
                             if (uvColor)
                             {
                                 uvColor->use(vkCmd);
-                                //printf("drawing with uv color shader\n");
                             }
                         }
 
                         else{
-                            glBindTexture(GL_TEXTURE_2D, 0);
 
+                            /* TODO: UNCOMMENT
+                            glBindTexture(GL_TEXTURE_2D, 0);
+                            */
                             if (justColor)
                             {
                                 justColor->use(vkCmd);
                                 currentShader = justColor;
                                 uvs.destroy();
-                                //printf("drawing with just color shader\n");
                             }
                         }
-
-                        //SDL 1.2
-                        //glLoadIdentity();
-                    
 
                         drawVA(vertices.getData(), uvs.getData(), colors,
                                uvs.count(), vertices.count(), currentShader, useVulkan, vkCmd, vkDevice);
@@ -507,46 +518,31 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
 
                 if ((texIndex >= 0) && (texIndex < (long)count()))
                 {
+
+                    /*TODO: UNCOMMENT
                     glEnable(GL_TEXTURE_2D);
-                    glBindTexture(GL_TEXTURE_2D, TexNames[texIndex/*batch[i].textureIndex*/]);
-                    //printf("tex index %u\n", TexNames[texIndex]);
+                    glBindTexture(GL_TEXTURE_2D, TexNames[texIndex]);
+                    */
                     if (uvColor)
                     {
                         uvColor->use(vkCmd);
-                        //printf("drawing uvTex shader\n");
                     }
                 }
                 else{
+
+                    /*TODO: UNCOMMENT
                     glBindTexture(GL_TEXTURE_2D, 0);
-                    glDisable(GL_TEXTURE_2D);
+                    glDisable(GL_TEXTURE_2D);*/
                     if (justColor)
                     {
                         justColor->use(vkCmd);
                         currentShader = justColor;
                         uvs.destroy();
-                        //printf("drawing with just color shader\n");
                     }
                 }
 
-                //for SDL 1.2
-                //glLoadIdentity();
-
-              /*  if (texIndex == 1){
-                    for(unsigned z = 0; z < vertices.count(); z++){
-                        printf("%f ", vertices[z]);
-                    }
-                    puts(" ");
-                    for(unsigned z = 0; z < uvs.count(); z++){
-                        printf("%f ", uvs[z]);
-                    }
-                    puts(" ");
-                }*/
-
                 drawVA(vertices.getData(), uvs.getData(), colors,
                        uvs.count(), vertices.count(), currentShader, useVulkan, vkCmd, vkDevice);
-
-                //printf("vertice count %d \n", (int)vertices.count());
-                //printf("uvs count %d \n", (int)uvs.count());
 
 
                 vertices.destroy();
@@ -571,6 +567,7 @@ void PicsContainer::resizeContainer(unsigned long index,
                                     GLuint texname)
 {
 
+    /*TODO: UNCOMMENT
     if (PicInfo.count() < index + 1)
     {
 
@@ -638,7 +635,7 @@ void PicsContainer::resizeContainer(unsigned long index,
             *(((GLuint *)TexNames.getData()) + index) = texname;
         }
 
-    }
+    }*/
 
 
 }
@@ -691,6 +688,7 @@ bool PicsContainer::loadFile(const char* file,
         PicInfo[index].vframes=PicInfo[index].height/PicInfo[index].theight;
         PicInfo[index].hframes=PicInfo[index].width/PicInfo[index].twidth;
 
+        /*TODO: UNCOMMENT
         int filtras = GL_NEAREST;
         if (PicInfo[index].filter){
             filtras = GL_LINEAR;
@@ -710,7 +708,7 @@ bool PicsContainer::loadFile(const char* file,
                  border, GL_RGBA, GL_UNSIGNED_BYTE,naujas.data);
         else
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, naujas.width, naujas.height,
-                 border, GL_RGB, GL_UNSIGNED_BYTE,naujas.data);
+                 border, GL_RGB, GL_UNSIGNED_BYTE,naujas.data);*/
 
         naujas.destroy();
 
@@ -737,6 +735,7 @@ void PicsContainer::makeTexture(Image& img,
     PicInfo[index].vframes = PicInfo[index].height/PicInfo[index].theight;
     PicInfo[index].hframes = PicInfo[index].width/PicInfo[index].twidth;
 
+    /*TODO: UNCOMMENT
     int filtras = GL_NEAREST;
     if (PicInfo[index].filter){
         filtras = GL_LINEAR;
@@ -757,6 +756,7 @@ void PicsContainer::makeTexture(Image& img,
         else
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.width, img.height,
                  border, GL_RGB, GL_UNSIGNED_BYTE, img.data);
+    */
 
 }
 
@@ -804,6 +804,7 @@ bool PicsContainer::loadFile(unsigned long index,
     PicInfo[index].vframes = PicInfo[index].height / PicInfo[index].theight;
     PicInfo[index].hframes = PicInfo[index].width / PicInfo[index].twidth;
 
+    /*TODO: UNCOMMENT
     int filtras = GL_NEAREST;
     if (PicInfo[index].filter)
         filtras = GL_LINEAR;
@@ -820,7 +821,7 @@ bool PicsContainer::loadFile(unsigned long index,
                      0, GL_RGBA, GL_UNSIGNED_BYTE,naujas.data);
     else
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, naujas.width, naujas.height,
-                     0, GL_RGB, GL_UNSIGNED_BYTE,naujas.data);
+                     0, GL_RGB, GL_UNSIGNED_BYTE,naujas.data);*/
 
     naujas.destroy();
 
@@ -844,7 +845,7 @@ void PicsContainer::attachTexture(GLuint textureID, unsigned long index,
     PicInfo[index].hframes = PicInfo[index].width / PicInfo[index].twidth;
 
 
-
+    /* TODO: UNCOMMENT
     int filtras = GL_NEAREST;
     if (PicInfo[index].filter)
         filtras = GL_LINEAR;
@@ -854,7 +855,7 @@ void PicsContainer::attachTexture(GLuint textureID, unsigned long index,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtras );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtras );
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);*/
 
 }
 
@@ -1043,12 +1044,14 @@ bool PicsContainer::initContainer(const char *list, AAssetManager* assman)
             PicInfo.add(data);
         }
 
+        /*TODO: UNCOMMENT
         for (unsigned long i = 0; i < PicInfo.count(); i++) {
             GLuint glui = 0;
             TexNames.add(glui);
         }
 
         glGenTextures(PicInfo.count(), (GLuint *) TexNames.getData());
+        */
     }
 
     pictureList.destroy();

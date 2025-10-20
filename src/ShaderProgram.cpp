@@ -151,14 +151,20 @@ void ShaderProgram::buildVkPipeline(VkDevice* device, VkPhysicalDevice* physical
 
     for (int i = 0; i < bindingCount; ++i)
     {
-
         VkVertexInputBindingDescription b = {};
         b.binding = i;
-        b.stride = 0;
+        b.stride = 8;
+
+        if ((needUvs && i == 2) || (!needUvs && i == 1)) //for colors
+        {
+            b.stride = 16;
+        }
+
         b.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
         bindings.push_back(b);
     }
+
 
     //pos
     VkVertexInputAttributeDescription positionAttribute = {};
