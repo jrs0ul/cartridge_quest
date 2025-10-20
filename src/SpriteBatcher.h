@@ -95,8 +95,15 @@ struct SpriteBatchItem{
 };
 //==================================
 
+struct Texture
+{
+    VkImage     vkImage;
+    VkImageView vkImageView;
+};
+
 class PicsContainer{
-    DArray<GLuint> TexNames;
+    DArray<Texture> textures; // for vulkan
+    DArray<GLuint>  glTextures; // for opengl
     DArray<PicData> PicInfo;
     DArray<SpriteBatchItem> batch;
 public:
@@ -121,11 +128,11 @@ public:
     bool initContainer(const char* list, AAssetManager* assman);
 #endif
 
-    //load textures from list in textfile
+    //load textures from the xml file list
 #ifndef __ANDROID__
-    bool load(const char* list);
+    bool load(const char* list, bool useVulkan = false);
 #else
-    bool load(const char* list, AAssetManager* assman);
+    bool load(const char* list, AAssetManager* assman, bool useVulkan = false);
 #endif
 
 
@@ -150,8 +157,8 @@ public:
                    VkCommandBuffer* vkCmd = nullptr,
                    VkDevice* vkDevice = nullptr);
 
-    GLuint getname(unsigned long index);
-    unsigned getTextureCount(){return TexNames.count();}
+    GLuint getGLName(unsigned long index);
+    unsigned getTextureCount(){return textures.count();}
     PicData* getInfo(unsigned long index);
     unsigned long count(){return PicInfo.count();}
     int findByName(const char* picname, bool debug = false);

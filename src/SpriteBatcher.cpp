@@ -26,23 +26,31 @@
 
 
 
-GLuint PicsContainer::getname(unsigned long index){
-    if (index < TexNames.count())
-        return TexNames[index];
+GLuint PicsContainer::getGLName(unsigned long index)
+{
+    if (index < textures.count())
+    {
+        return glTextures[index];
+    }
+
     return 0;
 }
 //-----------------------------
 
-PicData* PicsContainer::getInfo(unsigned long index){
-    if (index < TexNames.count())
+PicData* PicsContainer::getInfo(unsigned long index)
+{
+    if (index < textures.count())
+    {
         return &PicInfo[index];
+    }
+
     return 0;
 }
 //-----------------------------
 #ifndef __ANDROID__
-bool PicsContainer::load(const char* list)
+bool PicsContainer::load(const char* list, bool useVulkan)
 #else
-bool PicsContainer::load(const char* list, AAssetManager* assman)
+bool PicsContainer::load(const char* list, AAssetManager* assman, bool useVulkan)
 #endif
 {
 
@@ -53,10 +61,10 @@ bool PicsContainer::load(const char* list, AAssetManager* assman)
 #endif
         return false;
 
-    for (unsigned long i = 0; i < PicInfo.count(); i++){
+    for (unsigned long i = 0; i < PicInfo.count(); i++)
+    {
 
         Image naujas;
-
         unsigned short imageBits = 0;
 
 #ifdef __ANDROID__
@@ -71,31 +79,42 @@ bool PicsContainer::load(const char* list, AAssetManager* assman)
         PicInfo[i].height = naujas.height;
 
 
-        PicInfo[i].htilew = PicInfo[i].twidth/2.0f;
-        PicInfo[i].htileh = PicInfo[i].theight/2.0f;
-        PicInfo[i].vframes = PicInfo[i].height/PicInfo[i].theight;
-        PicInfo[i].hframes = PicInfo[i].width/PicInfo[i].twidth;
+        PicInfo[i].htilew  = PicInfo[i].twidth / 2.0f;
+        PicInfo[i].htileh  = PicInfo[i].theight / 2.0f;
+        PicInfo[i].vframes = PicInfo[i].height / PicInfo[i].theight;
+        PicInfo[i].hframes = PicInfo[i].width / PicInfo[i].twidth;
 
 
-        /* TODO: UNCOMMENT
-        int filtras = GL_NEAREST;
-        if (PicInfo[i].filter)
-            filtras = GL_LINEAR;
+        if (!useVulkan)
+        {
+            int filter = GL_NEAREST;
+
+            if (PicInfo[i].filter)
+            {
+                filter = GL_LINEAR;
+            }
 
 
-        glBindTexture(GL_TEXTURE_2D, TexNames[i]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtras );
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtras );
+            glBindTexture(GL_TEXTURE_2D, glTextures[i]);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter );
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter );
 
-        if (imageBits > 24)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, naujas.width, naujas.height,
-                         0, GL_RGBA, GL_UNSIGNED_BYTE,naujas.data);
-        else
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, naujas.width, naujas.height,
-                         0, GL_RGB, GL_UNSIGNED_BYTE,naujas.data);
-        */
+            if (imageBits > 24)
+            {
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, naujas.width, naujas.height,
+                        0, GL_RGBA, GL_UNSIGNED_BYTE,naujas.data);
+            }
+            else
+            {
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, naujas.width, naujas.height,
+                        0, GL_RGB, GL_UNSIGNED_BYTE,naujas.data);
+            }
+        }
+        else //VULKAN
+        {
+        }
 
         naujas.destroy();
 
@@ -248,7 +267,8 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                               int method,
                               bool useVulkan,
                               VkCommandBuffer* vkCmd,
-                              VkDevice*        vkDevice){
+                              VkDevice*        vkDevice)
+{
 
         switch(method){
               //TODO: complete VA
@@ -280,7 +300,6 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                     if ((batch[i].textureIndex >= 0) && ( batch[i].textureIndex < (long)count()))
                     {
                         p = &PicInfo[batch[i].textureIndex];
-                       // printf("tex index %ld\n", batch[i].textureIndex);
                     }
 
                     if (p)
@@ -317,10 +336,14 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                         && (vertices.count() > 0))
                     {
                         //let's draw old stuff
-                        if ((texIndex >= 0) && (texIndex < (long)count())){
-                            /* TODO: UNCOMMENT
-                            glBindTexture(GL_TEXTURE_2D, TexNames[texIndex]);
-                            */
+                        if ((texIndex >= 0) && (texIndex < (long)count()))
+                        {
+
+                            if (!useVulkan)
+                            {
+                                glBindTexture(GL_TEXTURE_2D, glTextures[texIndex]);
+                            }
+
 
                             if (uvColor)
                             {
@@ -330,9 +353,8 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
 
                         else{
 
-                            /* TODO: UNCOMMENT
                             glBindTexture(GL_TEXTURE_2D, 0);
-                            */
+
                             if (justColor)
                             {
                                 justColor->use(vkCmd);
@@ -343,12 +365,6 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
 
                         drawVA(vertices.getData(), uvs.getData(), colors,
                                uvs.count(), vertices.count(), currentShader, useVulkan, vkCmd, vkDevice);
-
-                        //printf("vertice count %d \n", (int)vertices.count());
-                        //printf("uvs count %d \n", (int)uvs.count());
-
-
-                        //printf("quad count %d \n",vertices.count());
 
                         vertices.destroy();
                         uvs.destroy();
@@ -364,32 +380,32 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                 uvs.add(uv.v[0]); uvs.add(uv.v[2]);
                 uvs.add(uv.v[1]); uvs.add(uv.v[3]);
                 uvs.add(uv.v[0]); uvs.add(uv.v[3]); 
-                
+
                 //----
                     memcpy(&colors[colorIndex], batch[i].upColor[0].c,
                            sizeof(float) * 4);
                     colorIndex += 4;
-                    
+
                     memcpy(&colors[colorIndex], batch[i].upColor[1].c, 
                            sizeof(float) * 4);
                     colorIndex += 4;
-                    
+
                     memcpy(&colors[colorIndex], batch[i].dwColor[1].c, 
                            sizeof(float) * 4);
                     colorIndex += 4;
-                    
+
                     memcpy(&colors[colorIndex], batch[i].upColor[0].c, 
                            sizeof(float) * 4);
                     colorIndex += 4;
-                    
+
                     memcpy(&colors[colorIndex], batch[i].dwColor[1].c, 
                            sizeof(float) * 4);
                     colorIndex += 4;
-                    
+
                     memcpy(&colors[colorIndex], batch[i].dwColor[0].c, 
                            sizeof(float) * 4);
                     colorIndex += 4;
-                    
+
                 //---
                 if (batch[i].rotationAngle == 0.0f){
                     if (batch[i].useCenter){
@@ -436,15 +452,15 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                         vertices.add(batch[i].x); 
                         vertices.add(batch[i].y + theight * batch[i].scaleY);
                     }
-                
                 }
                 else{
 
                 //TODO: non-centered rotation
 
                     float angle = batch[i].rotationAngle * 0.0174532925 + 3.14f;
-                  
-                    if (batch[i].useCenter){
+
+                    if (batch[i].useCenter)
+                    {
                         float hwidth = htilew * batch[i].scaleX;
                         float hheight = htileh * batch[i].scaleY;
 
@@ -518,20 +534,25 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                 if ((texIndex >= 0) && (texIndex < (long)count()))
                 {
 
-                    /*TODO: UNCOMMENT
-                    glEnable(GL_TEXTURE_2D);
-                    glBindTexture(GL_TEXTURE_2D, TexNames[texIndex]);
-                    */
+                    if (!useVulkan)
+                    {
+                        glEnable(GL_TEXTURE_2D);
+                        glBindTexture(GL_TEXTURE_2D, glTextures[texIndex]);
+                    }
+
                     if (uvColor)
                     {
                         uvColor->use(vkCmd);
                     }
                 }
-                else{
+                else
+                {
+                    if (!useVulkan)
+                    {
+                        glBindTexture(GL_TEXTURE_2D, 0);
+                        glDisable(GL_TEXTURE_2D);
+                    }
 
-                    /*TODO: UNCOMMENT
-                    glBindTexture(GL_TEXTURE_2D, 0);
-                    glDisable(GL_TEXTURE_2D);*/
                     if (justColor)
                     {
                         justColor->use(vkCmd);
@@ -566,7 +587,6 @@ void PicsContainer::resizeContainer(unsigned long index,
                                     GLuint texname)
 {
 
-    /*TODO: UNCOMMENT
     if (PicInfo.count() < index + 1)
     {
 
@@ -579,12 +599,12 @@ void PicsContainer::resizeContainer(unsigned long index,
         for (unsigned i = PicInfo.count(); i < index + 1; i++)
         {
             PicInfo.add(p);
-            TexNames.add(glui);
+            glTextures.add(glui);
         }
 
         if (createTextures)
         {
-            glGenTextures(1, ((GLuint *)TexNames.getData()) + index);
+            glGenTextures(1, ((GLuint *)glTextures.getData()) + index);
         }
 
         char * copy = (char*)malloc(strlen(name)+1);
@@ -620,21 +640,21 @@ void PicsContainer::resizeContainer(unsigned long index,
 
         free(copy);
 
-        if (glIsTexture(TexNames[index]))
+        if (glIsTexture(glTextures[index]))
         {
-            glDeleteTextures(1, ((GLuint *)TexNames.getData()) + index);
+            glDeleteTextures(1, ((GLuint *)glTextures.getData()) + index);
         }
 
         if (createTextures)
         {
-            glGenTextures(1, ((GLuint *)TexNames.getData()) + index);
+            glGenTextures(1, ((GLuint *)glTextures.getData()) + index);
         }
         else
         {
-            *(((GLuint *)TexNames.getData()) + index) = texname;
+            *(((GLuint *)glTextures.getData()) + index) = texname;
         }
 
-    }*/
+    }
 
 
 }
@@ -687,14 +707,15 @@ bool PicsContainer::loadFile(const char* file,
         PicInfo[index].vframes=PicInfo[index].height/PicInfo[index].theight;
         PicInfo[index].hframes=PicInfo[index].width/PicInfo[index].twidth;
 
-        /*TODO: UNCOMMENT
         int filtras = GL_NEAREST;
-        if (PicInfo[index].filter){
+
+        if (PicInfo[index].filter)
+        {
             filtras = GL_LINEAR;
         }
 
 
-        glBindTexture(GL_TEXTURE_2D, TexNames[index]);
+        glBindTexture(GL_TEXTURE_2D, glTextures[index]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtras );
@@ -707,7 +728,7 @@ bool PicsContainer::loadFile(const char* file,
                  border, GL_RGBA, GL_UNSIGNED_BYTE,naujas.data);
         else
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, naujas.width, naujas.height,
-                 border, GL_RGB, GL_UNSIGNED_BYTE,naujas.data);*/
+                 border, GL_RGB, GL_UNSIGNED_BYTE,naujas.data);
 
         naujas.destroy();
 
@@ -734,14 +755,15 @@ void PicsContainer::makeTexture(Image& img,
     PicInfo[index].vframes = PicInfo[index].height/PicInfo[index].theight;
     PicInfo[index].hframes = PicInfo[index].width/PicInfo[index].twidth;
 
-    /*TODO: UNCOMMENT
     int filtras = GL_NEAREST;
-    if (PicInfo[index].filter){
+
+    if (PicInfo[index].filter)
+    {
         filtras = GL_LINEAR;
     }
 
 
-    glBindTexture(GL_TEXTURE_2D, TexNames[index]);
+    glBindTexture(GL_TEXTURE_2D, glTextures[index]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtras );
@@ -750,12 +772,15 @@ void PicsContainer::makeTexture(Image& img,
     GLint border = 0;
 
     if (img.bits > 24)
+    {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.width, img.height,
-                     border, GL_RGBA, GL_UNSIGNED_BYTE, img.data);
-        else
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.width, img.height,
-                 border, GL_RGB, GL_UNSIGNED_BYTE, img.data);
-    */
+                border, GL_RGBA, GL_UNSIGNED_BYTE, img.data);
+    }
+    else
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.width, img.height,
+                border, GL_RGB, GL_UNSIGNED_BYTE, img.data);
+    }
 
 }
 
@@ -803,24 +828,27 @@ bool PicsContainer::loadFile(unsigned long index,
     PicInfo[index].vframes = PicInfo[index].height / PicInfo[index].theight;
     PicInfo[index].hframes = PicInfo[index].width / PicInfo[index].twidth;
 
-    /*TODO: UNCOMMENT
     int filtras = GL_NEAREST;
     if (PicInfo[index].filter)
         filtras = GL_LINEAR;
 
 
-    glBindTexture(GL_TEXTURE_2D, TexNames[index]);
+    glBindTexture(GL_TEXTURE_2D, glTextures[index]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtras );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtras );
 
     if (imageBits > 24)
+    {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, naujas.width, naujas.height,
                      0, GL_RGBA, GL_UNSIGNED_BYTE,naujas.data);
+    }
     else
+    {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, naujas.width, naujas.height,
-                     0, GL_RGB, GL_UNSIGNED_BYTE,naujas.data);*/
+                     0, GL_RGB, GL_UNSIGNED_BYTE,naujas.data);
+    }
 
     naujas.destroy();
 
@@ -844,17 +872,19 @@ void PicsContainer::attachTexture(GLuint textureID, unsigned long index,
     PicInfo[index].hframes = PicInfo[index].width / PicInfo[index].twidth;
 
 
-    /* TODO: UNCOMMENT
     int filtras = GL_NEAREST;
-    if (PicInfo[index].filter)
-        filtras = GL_LINEAR;
 
-    glBindTexture(GL_TEXTURE_2D, TexNames[index]);
+    if (PicInfo[index].filter)
+    {
+        filtras = GL_LINEAR;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, glTextures[index]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtras );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtras );
-    glBindTexture(GL_TEXTURE_2D, 0);*/
+    glBindTexture(GL_TEXTURE_2D, 0);
 
 }
 
@@ -1043,14 +1073,13 @@ bool PicsContainer::initContainer(const char *list, AAssetManager* assman)
             PicInfo.add(data);
         }
 
-        /*TODO: UNCOMMENT
-        for (unsigned long i = 0; i < PicInfo.count(); i++) {
+        for (unsigned long i = 0; i < PicInfo.count(); i++) 
+        {
             GLuint glui = 0;
-            TexNames.add(glui);
+            glTextures.add(glui);
         }
 
-        glGenTextures(PicInfo.count(), (GLuint *) TexNames.getData());
-        */
+        glGenTextures(PicInfo.count(), (GLuint *)glTextures.getData());
     }
 
     pictureList.destroy();
@@ -1060,12 +1089,17 @@ bool PicsContainer::initContainer(const char *list, AAssetManager* assman)
 }
 
 //----------------------------------
-void PicsContainer::destroy(){
-    for (unsigned long i = 0; i < TexNames.count(); i++){
-        if (glIsTexture(TexNames[i]))
-            glDeleteTextures(1, ((GLuint *)TexNames.getData()) + i);
+void PicsContainer::destroy()
+{
+    for (unsigned long i = 0; i < glTextures.count(); i++)
+    {
+        if (glIsTexture(glTextures[i]))
+        {
+            glDeleteTextures(1, ((GLuint *)glTextures.getData()) + i);
+        }
     }
-    TexNames.destroy();
+
+    glTextures.destroy();
     batch.destroy();
 
     for (unsigned long i = 0; i < PicInfo.count(); ++i)
@@ -1077,12 +1111,16 @@ void PicsContainer::destroy(){
 }
 
 //-------------------------------
-void PicsContainer::remove(unsigned long index){
-    if (index < TexNames.count()){
-        if (glIsTexture(TexNames[index]))
-            glDeleteTextures(1, ((GLuint *)TexNames.getData()) + index);
+void PicsContainer::remove(unsigned long index)
+{
+    if (index < glTextures.count())
+    {
+        if (glIsTexture(glTextures[index]))
+        {
+            glDeleteTextures(1, ((GLuint *)glTextures.getData()) + index);
+        }
 
-        TexNames.remove(index);
+        glTextures.remove(index);
         PicInfo.remove(index);
     }
 
