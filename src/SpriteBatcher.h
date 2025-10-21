@@ -102,7 +102,7 @@ struct Texture
 };
 
 class PicsContainer{
-    DArray<Texture> textures; // for vulkan
+    DArray<Texture> vkTextures; // for vulkan
     DArray<GLuint>  glTextures; // for opengl
     DArray<PicData> PicInfo;
     DArray<SpriteBatchItem> batch;
@@ -130,9 +130,11 @@ public:
 
     //load textures from the xml file list
 #ifndef __ANDROID__
-    bool load(const char* list, bool useVulkan = false);
+    bool load(const char* list, bool useVulkan = false,
+              VkDevice* vkDevice = nullptr, VkPhysicalDevice* physical = nullptr);
 #else
-    bool load(const char* list, AAssetManager* assman, bool useVulkan = false);
+    bool load(const char* list, AAssetManager* assman, bool useVulkan = false,
+              VkDevice* vkDevice = nullptr, VkPhysicalDevice* physical = nullptr);
 #endif
 
 
@@ -158,7 +160,7 @@ public:
                    VkDevice* vkDevice = nullptr);
 
     GLuint getGLName(unsigned long index);
-    unsigned getTextureCount(){return textures.count();}
+    unsigned getTextureCount(){return vkTextures.count();}
     PicData* getInfo(unsigned long index);
     unsigned long count(){return PicInfo.count();}
     int findByName(const char* picname, bool debug = false);

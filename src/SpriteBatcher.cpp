@@ -17,6 +17,7 @@
 #include "Vectors.h"
 #include "OSTools.h"
 #include "Xml.h"
+#include "SDLVideo.h"
 
 #ifdef __ANDROID__
 #include <android/log.h>
@@ -28,7 +29,7 @@
 
 GLuint PicsContainer::getGLName(unsigned long index)
 {
-    if (index < textures.count())
+    if (index < glTextures.count())
     {
         return glTextures[index];
     }
@@ -39,7 +40,7 @@ GLuint PicsContainer::getGLName(unsigned long index)
 
 PicData* PicsContainer::getInfo(unsigned long index)
 {
-    if (index < textures.count())
+    if (index < vkTextures.count())
     {
         return &PicInfo[index];
     }
@@ -48,9 +49,11 @@ PicData* PicsContainer::getInfo(unsigned long index)
 }
 //-----------------------------
 #ifndef __ANDROID__
-bool PicsContainer::load(const char* list, bool useVulkan)
+bool PicsContainer::load(const char* list, bool useVulkan,
+                         VkDevice* vkDevice, VkPhysicalDevice* physical)
 #else
-bool PicsContainer::load(const char* list, AAssetManager* assman, bool useVulkan)
+bool PicsContainer::load(const char* list, AAssetManager* assman, bool useVulkan,
+                         VkDevice* vkDevice, VkPhysicalDevice* physical)
 #endif
 {
 
@@ -59,24 +62,30 @@ bool PicsContainer::load(const char* list, AAssetManager* assman, bool useVulkan
 #else
     if (!initContainer(list, assman))
 #endif
+    {
         return false;
+    }
 
     for (unsigned long i = 0; i < PicInfo.count(); i++)
     {
 
-        Image naujas;
+        Image newImg;
         unsigned short imageBits = 0;
 
 #ifdef __ANDROID__
-        if (!naujas.loadTga(PicInfo[i].name, imageBits, assman))
-            LOGI("%s not found or corrupted by M$\n",PicInfo[i].name);
+        if (!newImg.loadTga(PicInfo[i].name, imageBits, assman))
+        {
+            LOGI("%s not found or corrupted by M$\n", PicInfo[i].name);
+        }
 #else
-        if (!naujas.loadTga(PicInfo[i].name,imageBits))
-            printf("%s not found or corrupted by M$\n",PicInfo[i].name);
+        if (!newImg.loadTga(PicInfo[i].name, imageBits))
+        {
+            printf("%s not found or corrupted by M$\n", PicInfo[i].name);
+        }
 #endif
 
-        PicInfo[i].width = naujas.width;
-        PicInfo[i].height = naujas.height;
+        PicInfo[i].width  = newImg.width;
+        PicInfo[i].height = newImg.height;
 
 
         PicInfo[i].htilew  = PicInfo[i].twidth / 2.0f;
@@ -94,7 +103,6 @@ bool PicsContainer::load(const char* list, AAssetManager* assman, bool useVulkan
                 filter = GL_LINEAR;
             }
 
-
             glBindTexture(GL_TEXTURE_2D, glTextures[i]);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
@@ -103,20 +111,52 @@ bool PicsContainer::load(const char* list, AAssetManager* assman, bool useVulkan
 
             if (imageBits > 24)
             {
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, naujas.width, naujas.height,
-                        0, GL_RGBA, GL_UNSIGNED_BYTE,naujas.data);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+                             newImg.width, newImg.height,
+                             0, GL_RGBA, GL_UNSIGNED_BYTE,
+                             newImg.data);
             }
             else
             {
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, naujas.width, naujas.height,
-                        0, GL_RGB, GL_UNSIGNED_BYTE,naujas.data);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+                             newImg.width, newImg.height,
+                             0, GL_RGB, GL_UNSIGNED_BYTE,
+                             newImg.data);
             }
         }
         else //VULKAN
         {
+
+            VkDeviceSize imageSize = newImg.width * newImg.height * newImg.bits;
+            VkBuffer stagingBuffer;
+            VkDeviceMemory stagingBufferMemory;
+            SDLVideo::createBuffer(*vkDevice, *physical, imageSize,
+                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                         stagingBuffer, stagingBufferMemory);
+
+            void* data;
+            vkMapMemory(*vkDevice, stagingBufferMemory, 0, imageSize, 0, &data);
+            memcpy(data, newImg.data, static_cast<size_t>(imageSize));
+            vkUnmapMemory(*vkDevice, stagingBufferMemory);
+
+
+            VkImage textureImage;
+            VkDeviceMemory textureImageMemory;
+
+            SDLVideo::createImage(*vkDevice,
+                                  *physical,
+                                  static_cast<uint32_t>(newImg.width),
+                                  static_cast<uint32_t>(newImg.height),
+                                  VK_FORMAT_R8G8B8A8_SRGB,
+                                  VK_IMAGE_TILING_OPTIMAL,
+                                  VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                  textureImage,
+                                  textureImageMemory);
         }
 
-        naujas.destroy();
+        newImg.destroy();
 
     }
     return true;

@@ -43,10 +43,44 @@ void SDLVideo::createSemaphore(VkSemaphore *semaphore)
 }
 
 
-uint32_t SDLVideo::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+void SDLVideo::createBuffer(VkDevice& device,
+                            VkPhysicalDevice& physical,
+                            VkDeviceSize size, 
+                            VkBufferUsageFlags usage, 
+                            VkMemoryPropertyFlags properties, 
+                            VkBuffer& buffer, 
+                            VkDeviceMemory& bufferMemory) 
+{
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create buffer!");
+    }
+
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType(physical, memRequirements.memoryTypeBits, properties);
+
+    if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) 
+    {
+        throw std::runtime_error("failed to allocate buffer memory!");
+    }
+
+    vkBindBufferMemory(device, buffer, bufferMemory, 0);
+}
+
+uint32_t SDLVideo::findMemoryType(VkPhysicalDevice& physical, uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
     VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(vkPhysicalDevice, &memProperties);
+    vkGetPhysicalDeviceMemoryProperties(physical, &memProperties);
 
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
     {
@@ -61,7 +95,9 @@ uint32_t SDLVideo::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
 
 
 
-void SDLVideo::createImage(uint32_t width,
+void SDLVideo::createImage(VkDevice& device,
+                           VkPhysicalDevice& physical,
+                           uint32_t width,
                            uint32_t height,
                            VkFormat format,
                            VkImageTiling tiling,
@@ -85,25 +121,25 @@ void SDLVideo::createImage(uint32_t width,
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateImage(vkDevice, &imageInfo, nullptr, &image) != VK_SUCCESS)
+    if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create image!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(vkDevice, image, &memRequirements);
+    vkGetImageMemoryRequirements(device, image, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = findMemoryType(physical, memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(vkDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) 
+    if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) 
     {
         throw std::runtime_error("failed to allocate image memory!");
     }
 
-    vkBindImageMemory(vkDevice, image, imageMemory, 0);
+    vkBindImageMemory(device, image, imageMemory, 0);
 }
 
 VkImageView SDLVideo::createImageView(VkImage& image, VkFormat format, VkImageAspectFlags aspectFlags)
@@ -470,7 +506,9 @@ bool SDLVideo::initWindow(const char * title,
         VkImage depthImage;
         VkDeviceMemory depthImageMemory;
 
-        createImage(vkSwapchainSize.width,
+        createImage(vkDevice,
+                    vkPhysicalDevice,
+                    vkSwapchainSize.width,
                     vkSwapchainSize.height,
                     VK_FORMAT_D32_SFLOAT_S8_UINT,
                     VK_IMAGE_TILING_OPTIMAL,

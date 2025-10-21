@@ -4,6 +4,7 @@
 
 #include "ShaderProgram.h"
 #include <cstdio>
+#include "SDLVideo.h"
 
 #ifdef __ANDROID__
 #include <android/log.h>
@@ -77,24 +78,6 @@ void ShaderProgram::link()
     }
 }
 
-uint32_t findMemoryType(VkPhysicalDevice* vkPhysicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
-{
-    VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(*vkPhysicalDevice, &memProperties);
-
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
-    {
-        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
-        {
-            return i;
-        }
-    }
-
-    throw std::runtime_error("failed to find suitable memory type!");
-}
-
-
-
 
 void ShaderProgram::buildVkPipeline(VkDevice* device,
                                     VkPhysicalDevice* physical,
@@ -123,7 +106,7 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = findMemoryType(physical, memRequirements.memoryTypeBits, 
+        allocInfo.memoryTypeIndex = SDLVideo::findMemoryType(*physical, memRequirements.memoryTypeBits, 
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
         if (vkAllocateMemory(*device, &allocInfo, nullptr, &vkVertexBuffersMemory[i]) != VK_SUCCESS) 
