@@ -163,6 +163,8 @@ public:
     VkPhysicalDevice * vkPhysicalDevice;
     VkRenderPass     * vkRenderPass;
     VkCommandBuffer  * vkCmd;
+    VkCommandPool    * vkCommandPool;
+    VkQueue          * vkGraphicsQueue;
 
     float MouseX;
     float MouseY;

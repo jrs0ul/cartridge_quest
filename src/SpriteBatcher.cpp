@@ -47,20 +47,158 @@ PicData* PicsContainer::getInfo(unsigned long index)
 
     return 0;
 }
+
+
+
+VkCommandBuffer beginSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool)
+{
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = commandPool;
+    allocInfo.commandBufferCount = 1;
+
+    VkCommandBuffer commandBuffer;
+    vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+    return commandBuffer;
+}
+
+void endSingleTimeCommands(VkDevice& device,
+                           VkCommandPool& commandPool,
+                           VkQueue& graphicsQueue,
+                           VkCommandBuffer commandBuffer)
+{
+    vkEndCommandBuffer(commandBuffer);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(graphicsQueue);
+
+    vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+}
+
+void copyBufferToImage(VkDevice& device, VkCommandPool& commandPool, VkQueue& graphicsQueue,
+                       VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) 
+{
+    VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+
+    VkBufferImageCopy region{};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1;
+    region.imageOffset = {0, 0, 0};
+    region.imageExtent = {
+        width,
+        height,
+        1
+    };
+
+    vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+    endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
+}
+
+
+void transitionImageLayout(VkDevice& device,
+                           VkCommandPool& commandPool,
+                           VkQueue& graphicsQueue,
+                           VkImage image,
+                           VkImageLayout oldLayout,
+                           VkImageLayout newLayout)
+{
+    VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+
+    VkImageMemoryBarrier barrier{};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.oldLayout = oldLayout;
+    barrier.newLayout = newLayout;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.image = image;
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+
+    VkPipelineStageFlags sourceStage;
+    VkPipelineStageFlags destinationStage;
+
+    if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) 
+    {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && 
+            newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) 
+    {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
+    else
+    {
+        throw std::invalid_argument("unsupported layout transition!");
+    }
+
+    vkCmdPipelineBarrier(
+            commandBuffer,
+            sourceStage,
+            destinationStage,
+            0,
+            0, nullptr,
+            0, nullptr,
+            1, &barrier
+            );
+
+    endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
+}
+
+
 //-----------------------------
 #ifndef __ANDROID__
-bool PicsContainer::load(const char* list, bool useVulkan,
-                         VkDevice* vkDevice, VkPhysicalDevice* physical)
+bool PicsContainer::load(const char* list, 
+                         bool useVulkan,
+                         VkDevice* vkDevice,
+                         VkPhysicalDevice* physical,
+                         VkCommandPool* vkCommandPool,
+                         VkQueue* vkGraphicsQueue
+                         )
 #else
-bool PicsContainer::load(const char* list, AAssetManager* assman, bool useVulkan,
-                         VkDevice* vkDevice, VkPhysicalDevice* physical)
+bool PicsContainer::load(const char* list, AAssetManager* assman, 
+                         bool useVulkan,
+                         VkDevice* vkDevice,
+                         VkPhysicalDevice* physical,
+                         VkCommandPool* vkCommandPool,
+                         VkQueue* vkGraphicsQueue
+                         )
 #endif
 {
 
 #ifndef __ANDROID__
-    if (!initContainer(list))
+    if (!initContainer(list, useVulkan))
 #else
-    if (!initContainer(list, assman))
+    if (!initContainer(list, assman, useVulkan))
 #endif
     {
         return false;
@@ -127,7 +265,7 @@ bool PicsContainer::load(const char* list, AAssetManager* assman, bool useVulkan
         else //VULKAN
         {
 
-            VkDeviceSize imageSize = newImg.width * newImg.height * newImg.bits;
+            VkDeviceSize imageSize = newImg.width * newImg.height * (newImg.bits / 8);
             VkBuffer stagingBuffer;
             VkDeviceMemory stagingBufferMemory;
             SDLVideo::createBuffer(*vkDevice, *physical, imageSize,
@@ -148,17 +286,124 @@ bool PicsContainer::load(const char* list, AAssetManager* assman, bool useVulkan
                                   *physical,
                                   static_cast<uint32_t>(newImg.width),
                                   static_cast<uint32_t>(newImg.height),
-                                  VK_FORMAT_R8G8B8A8_SRGB,
+                                  newImg.bits > 24 ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8_SRGB,
                                   VK_IMAGE_TILING_OPTIMAL,
                                   VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                                   VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                   textureImage,
                                   textureImageMemory);
+
+            transitionImageLayout(*vkDevice,
+                                  *vkCommandPool,
+                                  *vkGraphicsQueue,
+                                  textureImage,
+                                  VK_IMAGE_LAYOUT_UNDEFINED,
+                                  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+            copyBufferToImage(*vkDevice,
+                              *vkCommandPool,
+                              *vkGraphicsQueue,
+                              stagingBuffer,
+                              textureImage, 
+                              static_cast<uint32_t>(newImg.width),
+                              static_cast<uint32_t>(newImg.height));
+
+            transitionImageLayout(*vkDevice,
+                                  *vkCommandPool,
+                                  *vkGraphicsQueue,
+                                  textureImage,
+                                  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+                                  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+            vkDestroyBuffer(*vkDevice, stagingBuffer, nullptr);
+            vkFreeMemory(*vkDevice, stagingBufferMemory, nullptr);
+
+
+            VkImageViewCreateInfo viewInfo{};
+            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            viewInfo.image = textureImage;
+            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.format = newImg.bits > 24 ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8_SRGB;
+            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            viewInfo.subresourceRange.baseMipLevel = 0;
+            viewInfo.subresourceRange.levelCount = 1;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount = 1;
+
+            Texture t;
+            t.vkImage = textureImage;
+
+            if (vkCreateImageView(*vkDevice, &viewInfo, nullptr, &t.vkImageView) != VK_SUCCESS)
+            {
+                throw std::runtime_error("failed to create texture image view!");
+            }
+
+            VkSamplerCreateInfo samplerInfo{};
+            samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+            samplerInfo.magFilter = VK_FILTER_LINEAR;
+            samplerInfo.minFilter = VK_FILTER_LINEAR;
+            samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+
+            if (vkCreateSampler(*vkDevice, &samplerInfo, nullptr, &t.vkSampler) != VK_SUCCESS) 
+            {
+                throw std::runtime_error("failed to create texture sampler!");
+            }
+
+
+            vkTextures.add(t);
+
         }
 
         newImg.destroy();
 
+    } // for
+
+
+    if (useVulkan)
+    {
+
+        VkDescriptorPool descriptorPool;
+
+        VkDescriptorPoolCreateInfo poolInfo{};
+
+        if (vkCreateDescriptorPool(*vkDevice, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) 
+        {
+            throw std::runtime_error("failed to create descriptor pool!");
+        }
+
+        VkDescriptorSet vkDS;
+
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = descriptorPool;
+        allocInfo.descriptorSetCount = 1;
+        //allocInfo.pSetLayouts = layouts.data();
+
+        if (vkAllocateDescriptorSets(*vkDevice, &allocInfo, &vkDS) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to allocate descriptor sets!");
+        }
+
+
+        VkDescriptorImageInfo imageInfo{};
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = vkTextures[0].vkImageView;
+        imageInfo.sampler = vkTextures[0].vkSampler;
+
+        VkWriteDescriptorSet ds;
+        ds.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        ds.dstSet = vkDS;
+        ds.dstBinding = 1;
+        ds.dstArrayElement = 0;
+        ds.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        ds.descriptorCount = 1;
+        ds.pImageInfo = &imageInfo;
+
+        vkUpdateDescriptorSets(*vkDevice, 1, &ds, 0, nullptr);
     }
+
     return true;
 }
 
@@ -954,9 +1199,9 @@ int PicsContainer::findByName(const char* picname, bool debug){
 }
 //---------------------------------------
 #ifndef __ANDROID__
-bool PicsContainer::initContainer(const char *list)
+bool PicsContainer::initContainer(const char *list, bool useVulkan)
 #else
-bool PicsContainer::initContainer(const char *list, AAssetManager* assman)
+bool PicsContainer::initContainer(const char *list, AAssetManager* assman, bool useVulkan)
 #endif
 {
 
@@ -1113,13 +1358,17 @@ bool PicsContainer::initContainer(const char *list, AAssetManager* assman)
             PicInfo.add(data);
         }
 
-        for (unsigned long i = 0; i < PicInfo.count(); i++) 
+        if (!useVulkan)
         {
-            GLuint glui = 0;
-            glTextures.add(glui);
-        }
+            for (unsigned long i = 0; i < PicInfo.count(); i++) 
+            {
+                GLuint glui = 0;
+                glTextures.add(glui);
+            }
 
-        glGenTextures(PicInfo.count(), (GLuint *)glTextures.getData());
+            printf("Creating %lu opengl textures\n", PicInfo.count());
+            glGenTextures(PicInfo.count(), (GLuint *)glTextures.getData());
+        }
     }
 
     pictureList.destroy();

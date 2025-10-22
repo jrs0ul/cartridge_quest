@@ -302,6 +302,8 @@ int main(int argc, char* argv[])
     Game.vkPhysicalDevice = SDL.getVKPhysicalDevice();
     Game.vkCmd            = SDL.getVkCmd();
     Game.vkRenderPass     = SDL.getVkRenderPass();
+    Game.vkCommandPool    = SDL.getVkCommandPool();
+    Game.vkGraphicsQueue  = SDL.getVkGraphicsQueue();
 
     SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 

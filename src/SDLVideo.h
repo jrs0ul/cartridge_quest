@@ -86,10 +86,12 @@ public:
     void     VkQueueSubmit();
     void     VkQueuePresent();
 
-    VkDevice*        getVkDevice(){return &vkDevice;}
-    VkCommandBuffer* getVkCmd(){return &vkCommandBuffer;}
-    VkRenderPass*    getVkRenderPass(){return &vkRenderPass;}
+    VkDevice*         getVkDevice(){return &vkDevice;}
+    VkCommandBuffer*  getVkCmd(){return &vkCommandBuffer;}
+    VkRenderPass*     getVkRenderPass(){return &vkRenderPass;}
     VkPhysicalDevice* getVKPhysicalDevice(){return &vkPhysicalDevice;}
+    VkCommandPool*    getVkCommandPool(){return &vkCommandPool;}
+    VkQueue*          getVkGraphicsQueue(){return &vkGraphicsQueue;}
 
     static uint32_t findMemoryType(VkPhysicalDevice& physical, uint32_t typeFilter, VkMemoryPropertyFlags properties);
     static void createImage(VkDevice& device,

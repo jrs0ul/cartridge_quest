@@ -95,10 +95,12 @@ struct SpriteBatchItem{
 };
 //==================================
 
+//Vulkan texture
 struct Texture
 {
     VkImage     vkImage;
     VkImageView vkImageView;
+    VkSampler   vkSampler;
 };
 
 class PicsContainer{
@@ -123,18 +125,26 @@ private:
 public:
     PicsContainer(){}
 #ifndef __ANDROID__
-    bool initContainer(const char* list);
+    bool initContainer(const char* list, bool useVulkan = false);
 #else
-    bool initContainer(const char* list, AAssetManager* assman);
+    bool initContainer(const char* list, AAssetManager* assman, bool useVulkan = false);
 #endif
 
     //load textures from the xml file list
 #ifndef __ANDROID__
     bool load(const char* list, bool useVulkan = false,
-              VkDevice* vkDevice = nullptr, VkPhysicalDevice* physical = nullptr);
+              VkDevice* vkDevice = nullptr,
+              VkPhysicalDevice* physical = nullptr,
+              VkCommandPool* vkCommandPool = nullptr,
+              VkQueue* vkGraphicsQueue = nullptr
+            );
 #else
     bool load(const char* list, AAssetManager* assman, bool useVulkan = false,
-              VkDevice* vkDevice = nullptr, VkPhysicalDevice* physical = nullptr);
+              VkDevice* vkDevice = nullptr,
+              VkPhysicalDevice* physical = nullptr,
+              VkCommandPool* vkCommandPool = nullptr,
+              VkQueue* vkGraphicsQueue = nullptr
+              );
 #endif
 
 

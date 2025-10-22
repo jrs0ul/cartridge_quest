@@ -4128,7 +4128,7 @@ void Game::init(bool useVulkan)
 
     MatrixOrtho(0.0, ScreenWidth / (float)sys.screenScaleX, ScreenHeight / (float)sys.screenScaleY, 0.0, -400, 400, OrthoMatrix);
 
-    pics.load("pics/imagesToLoad.xml", useVulkan, vulkanDevice);
+    pics.load("pics/imagesToLoad.xml", useVulkan, vulkanDevice, vkPhysicalDevice, vkCommandPool, vkGraphicsQueue);
 
 
     Smenu menu;
