@@ -360,51 +360,33 @@ bool PicsContainer::load(const char* list, AAssetManager* assman,
 
     } // for
 
-
+    return true;
+}
+//--------------------------------------------------
+void PicsContainer::bindTexture(unsigned long index,
+                                ShaderProgram* shader,
+                                bool useVulkan,
+                                VkDevice* vkDevice)
+{
     if (useVulkan)
     {
-
-        VkDescriptorPool descriptorPool;
-
-        VkDescriptorPoolCreateInfo poolInfo{};
-
-        if (vkCreateDescriptorPool(*vkDevice, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) 
-        {
-            throw std::runtime_error("failed to create descriptor pool!");
-        }
-
-        VkDescriptorSet vkDS;
-
-        VkDescriptorSetAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = descriptorPool;
-        allocInfo.descriptorSetCount = 1;
-        //allocInfo.pSetLayouts = layouts.data();
-
-        if (vkAllocateDescriptorSets(*vkDevice, &allocInfo, &vkDS) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to allocate descriptor sets!");
-        }
-
-
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = vkTextures[0].vkImageView;
-        imageInfo.sampler = vkTextures[0].vkSampler;
+        imageInfo.imageView = vkTextures[index].vkImageView;
+        imageInfo.sampler = vkTextures[index].vkSampler;
 
-        VkWriteDescriptorSet ds;
+        VkWriteDescriptorSet ds{};
         ds.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        ds.dstSet = vkDS;
-        ds.dstBinding = 1;
+        ds.dstSet = shader->vkDS;
+        ds.dstBinding = 0;
         ds.dstArrayElement = 0;
         ds.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         ds.descriptorCount = 1;
         ds.pImageInfo = &imageInfo;
 
-        vkUpdateDescriptorSets(*vkDevice, 1, &ds, 0, nullptr);
-    }
+        vkUpdateDescriptorSets(*vkDevice, 0, &ds, 0, nullptr);
 
-    return true;
+    }
 }
 
 //---------------------------------------------------
@@ -522,6 +504,8 @@ void PicsContainer::drawVA(void * vertices,
         {
             vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], offsets);
         }
+
+        vkCmdBindDescriptorSets(*vkCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->vkPipelineLayout, 0, 1, &shader->vkDS, 0, nullptr);
 
         vkCmdDraw(*vkCmd, vertexCount / 2, 1, 0, 0);
 
@@ -828,6 +812,11 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                     if (uvColor)
                     {
                         uvColor->use(vkCmd);
+
+                        if (useVulkan)
+                        {
+                            bindTexture(texIndex, uvColor, true, vkDevice);
+                        }
                     }
                 }
                 else

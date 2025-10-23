@@ -16,11 +16,12 @@ class ShaderProgram
 //vulkan stuff
     std::vector<VkPipelineShaderStageCreateInfo> vkShaderStages;
     VkPipeline       vkPipeline;
+public:
     VkPipelineLayout vkPipelineLayout;
 
-public:
     VkBuffer         vkVertexBuffers[3];
     VkDeviceMemory   vkVertexBuffersMemory[3];
+    VkDescriptorSet  vkDS;
 
     void create(bool useVulkan);
     void destroy();

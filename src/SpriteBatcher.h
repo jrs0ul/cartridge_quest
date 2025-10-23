@@ -150,6 +150,8 @@ public:
 
     void destroy();
 
+    void bindTexture(unsigned long index, ShaderProgram* shader, bool useVulkan = false, VkDevice* vkDevice = nullptr);
+
     //adds sprite to batch
     void draw( long textureIndex,
                 float x, float y,

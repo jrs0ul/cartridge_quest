@@ -118,12 +118,33 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
     }
 
 
+    VkDescriptorSetLayout descriptorSetLayout;
+
+    VkDescriptorSetLayoutBinding uvsLayoutBinding{};
+    uvsLayoutBinding.binding = 0;
+    uvsLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    uvsLayoutBinding.descriptorCount = 1;
+    uvsLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = 1;
+    layoutInfo.pBindings = &uvsLayoutBinding;
+
+    if (vkCreateDescriptorSetLayout(*device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) 
+    {
+        throw std::runtime_error("failed to create descriptor set layout!");
+    }
+
+
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.pNext = nullptr;
     pipelineLayoutInfo.flags = 0;
-    pipelineLayoutInfo.setLayoutCount = 0;
-    pipelineLayoutInfo.pSetLayouts = nullptr;
+
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+
     pipelineLayoutInfo.pushConstantRangeCount = 0;
     pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
@@ -202,8 +223,8 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
 
     VkRect2D scissor;
     scissor.offset = { 0, 0 };
-    scissor.extent = {config.ScreenWidth * config.screenScaleX,
-                      config.ScreenHeight * config.screenScaleY};
+    scissor.extent = {(uint32_t)(config.ScreenWidth * config.screenScaleX),
+                      (uint32_t)(config.ScreenHeight * config.screenScaleY)};
 
     VkViewport viewport;
     viewport.x = 0.0f;
@@ -283,6 +304,40 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
     {
         printf("Failed to create a pipeline\n");
     }
+
+
+    VkDescriptorPool descriptorPool;
+
+    VkDescriptorPoolSize poolSize{};
+    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSize.descriptorCount = 1;
+
+    VkDescriptorPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.poolSizeCount = 1;
+    poolInfo.pPoolSizes = &poolSize;
+    poolInfo.maxSets = 1;
+
+    if (vkCreateDescriptorPool(*device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) 
+    {
+        throw std::runtime_error("failed to create descriptor pool!");
+    }
+
+
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = descriptorPool;
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = &descriptorSetLayout;
+
+    auto res = vkAllocateDescriptorSets(*device, &allocInfo, &vkDS);
+
+    if (res != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to allocate descriptor sets!");
+    }
+
+
 }
 
 void ShaderProgram::use(VkCommandBuffer* vkCmd)
