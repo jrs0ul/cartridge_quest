@@ -337,8 +337,16 @@ bool PicsContainer::load(const char* list, AAssetManager* assman,
 
             VkSamplerCreateInfo samplerInfo{};
             samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-            samplerInfo.magFilter = VK_FILTER_LINEAR;
-            samplerInfo.minFilter = VK_FILTER_LINEAR;
+
+            VkFilter filter = VK_FILTER_NEAREST;
+
+            if (PicInfo[i].filter)
+            {
+                filter = VK_FILTER_LINEAR;
+            }
+
+            samplerInfo.magFilter = filter;
+            samplerInfo.minFilter = filter;
             samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -470,41 +478,61 @@ void PicsContainer::drawVA(void * vertices,
     else // VULKAN
     {
         void* vertData;
-        vkMapMemory(*vkDevice, shader->vkVertexBuffersMemory[0], 0, vertexCount * sizeof(float) * 2, 0, &vertData);
-        memcpy(vertData, vertices, vertexCount * sizeof(float) * 2);
+        vkMapMemory(*vkDevice,
+                    shader->vkVertexBuffersMemory[0],
+                    vkVertexBufferOffset,
+                    vertexCount * sizeof(float),
+                    0,
+                    &vertData);
+        memcpy(vertData, vertices, vertexCount * sizeof(float));
         vkUnmapMemory(*vkDevice, shader->vkVertexBuffersMemory[0]);
 
         if (uvsCount)
         {
             void* uvsData;
-            vkMapMemory(*vkDevice, shader->vkVertexBuffersMemory[1], 0, sizeof(float) * vertexCount * 2, 0, &uvsData);
-            memcpy(uvsData, uvs, sizeof(float) * vertexCount * 2);
+            vkMapMemory(*vkDevice,
+                        shader->vkVertexBuffersMemory[1],
+                        vkUVsBufferOffset,
+                        sizeof(float) * vertexCount,
+                        0,
+                        &uvsData);
+            memcpy(uvsData, uvs, sizeof(float) * vertexCount);
             vkUnmapMemory(*vkDevice, shader->vkVertexBuffersMemory[1]);
         }
 
         void* colorData;
         vkMapMemory(*vkDevice,
                     (uvsCount) ? shader->vkVertexBuffersMemory[2] : shader->vkVertexBuffersMemory[1],
-                    0, sizeof(float) * vertexCount * 4, 0, &colorData);
+                    vkColorBufferOffset,
+                    sizeof(float) * vertexCount * 4,
+                    0,
+                    &colorData);
         memcpy(colorData, colors, sizeof(float) * vertexCount * 4);
         vkUnmapMemory(*vkDevice, (uvsCount) ? shader->vkVertexBuffersMemory[2] : shader->vkVertexBuffersMemory[1]);
 
-        VkDeviceSize offsets[] = {0, 0, 0};
+        VkDeviceSize offsets[] = {vkVertexBufferOffset, vkUVsBufferOffset, vkColorBufferOffset};
+        VkDeviceSize doffsets[] = {vkVertexBufferOffset, vkColorBufferOffset};
 
         vkCmdBindVertexBuffers(*vkCmd, 0, 1, &shader->vkVertexBuffers[0], offsets);
+
         if (uvsCount)
         {
             vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], offsets);
+            vkUVsBufferOffset += vertexCount * sizeof(float);
             vkCmdBindVertexBuffers(*vkCmd, 2, 1, &shader->vkVertexBuffers[2], offsets);
+            vkColorBufferOffset += vertexCount * sizeof(float) * 2;
         }
         else
         {
-            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], offsets);
+            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], doffsets);
+            vkColorBufferOffset += vertexCount * sizeof(float) * 2;
         }
 
         vkCmdBindDescriptorSets(*vkCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->vkPipelineLayout, 0, 1, &shader->vkDS, 0, nullptr);
 
         vkCmdDraw(*vkCmd, vertexCount / 2, 1, 0, 0);
+
+        vkVertexBufferOffset += vertexCount * sizeof(float);
 
     }
 }
@@ -535,6 +563,10 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                               VkCommandBuffer* vkCmd,
                               VkDevice*        vkDevice)
 {
+
+        vkVertexBufferOffset = 0;
+        vkUVsBufferOffset = 0;
+        vkColorBufferOffset = 0;
 
         switch(method){
               //TODO: complete VA

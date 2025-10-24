@@ -681,7 +681,7 @@ void SDLVideo::beginRenderPass(bool useVulkan)
         VkAcquireNextImage();
         VkResetCommandBuffer();
         VkBeginCommandBuffer();
-        VkBeginRenderPass({1.0f, 0.0f, 1.0f, 1.0f}, {1.0f, 0});
+        VkBeginRenderPass({0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 0});
     }
 }
 
@@ -739,7 +739,6 @@ void SDLVideo::VkBeginRenderPass(VkClearColorValue clearColor, VkClearDepthStenc
     render_pass_info.framebuffer       = vkSwapchainFramebuffers[vkFrameIndex];
     render_pass_info.renderArea.offset = {0, 0};
     render_pass_info.renderArea.extent = vkSwapchainSize;
-    render_pass_info.clearValueCount   = 1;
 
     std::vector<VkClearValue> clearValues(2);
     clearValues[0].color = clearColor;

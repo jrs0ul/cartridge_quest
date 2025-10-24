@@ -109,6 +109,10 @@ class PicsContainer{
     DArray<GLuint>  glTextures; // for opengl
     DArray<PicData> PicInfo;
     DArray<SpriteBatchItem> batch;
+
+    VkDeviceSize vkVertexBufferOffset;
+    VkDeviceSize vkUVsBufferOffset;
+    VkDeviceSize vkColorBufferOffset;
 public:
     void drawVA(void * vertices, void * uvs, void *colors,
                 unsigned uvsCount, unsigned vertexCount,
