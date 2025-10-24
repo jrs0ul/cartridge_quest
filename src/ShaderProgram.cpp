@@ -124,7 +124,7 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
     uvsLayoutBinding.binding = 0;
     uvsLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     uvsLayoutBinding.descriptorCount = 1;
-    uvsLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    uvsLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

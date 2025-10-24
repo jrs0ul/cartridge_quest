@@ -98,13 +98,14 @@ struct SpriteBatchItem{
 //Vulkan texture
 struct Texture
 {
-    VkImage     vkImage;
-    VkImageView vkImageView;
-    VkSampler   vkSampler;
+    VkImage         vkImage;
+    VkImageView     vkImageView;
+    VkSampler       vkSampler;
+    VkDeviceMemory  vkTextureMemory;
 };
 
 class PicsContainer{
-    DArray<Texture> vkTextures; // for vulkan
+    std::vector<Texture> vkTextures; // for vulkan
     DArray<GLuint>  glTextures; // for opengl
     DArray<PicData> PicInfo;
     DArray<SpriteBatchItem> batch;
@@ -172,7 +173,7 @@ public:
                    VkDevice* vkDevice = nullptr);
 
     GLuint getGLName(unsigned long index);
-    unsigned getTextureCount(){return vkTextures.count();}
+    unsigned getTextureCount(){return vkTextures.size();}
     PicData* getInfo(unsigned long index);
     unsigned long count(){return PicInfo.count();}
     int findByName(const char* picname, bool debug = false);

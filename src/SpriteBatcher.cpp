@@ -40,7 +40,7 @@ GLuint PicsContainer::getGLName(unsigned long index)
 
 PicData* PicsContainer::getInfo(unsigned long index)
 {
-    if (index < vkTextures.count())
+    if (index < vkTextures.size())
     {
         return &PicInfo[index];
     }
@@ -279,8 +279,7 @@ bool PicsContainer::load(const char* list, AAssetManager* assman,
             vkUnmapMemory(*vkDevice, stagingBufferMemory);
 
 
-            VkImage textureImage;
-            VkDeviceMemory textureImageMemory;
+            Texture t;
 
             SDLVideo::createImage(*vkDevice,
                                   *physical,
@@ -290,13 +289,13 @@ bool PicsContainer::load(const char* list, AAssetManager* assman,
                                   VK_IMAGE_TILING_OPTIMAL,
                                   VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                                   VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                  textureImage,
-                                  textureImageMemory);
+                                  t.vkImage,
+                                  t.vkTextureMemory);
 
             transitionImageLayout(*vkDevice,
                                   *vkCommandPool,
                                   *vkGraphicsQueue,
-                                  textureImage,
+                                  t.vkImage,
                                   VK_IMAGE_LAYOUT_UNDEFINED,
                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
@@ -304,14 +303,14 @@ bool PicsContainer::load(const char* list, AAssetManager* assman,
                               *vkCommandPool,
                               *vkGraphicsQueue,
                               stagingBuffer,
-                              textureImage, 
+                              t.vkImage,
                               static_cast<uint32_t>(newImg.width),
                               static_cast<uint32_t>(newImg.height));
 
             transitionImageLayout(*vkDevice,
                                   *vkCommandPool,
                                   *vkGraphicsQueue,
-                                  textureImage,
+                                  t.vkImage,
                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -321,7 +320,7 @@ bool PicsContainer::load(const char* list, AAssetManager* assman,
 
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.image = textureImage;
+            viewInfo.image = t.vkImage;
             viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
             viewInfo.format = newImg.bits > 24 ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8_SRGB;
             viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -330,8 +329,6 @@ bool PicsContainer::load(const char* list, AAssetManager* assman,
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
 
-            Texture t;
-            t.vkImage = textureImage;
 
             if (vkCreateImageView(*vkDevice, &viewInfo, nullptr, &t.vkImageView) != VK_SUCCESS)
             {
@@ -352,7 +349,7 @@ bool PicsContainer::load(const char* list, AAssetManager* assman,
             }
 
 
-            vkTextures.add(t);
+            vkTextures.push_back(t);
 
         }
 
@@ -384,7 +381,7 @@ void PicsContainer::bindTexture(unsigned long index,
         ds.descriptorCount = 1;
         ds.pImageInfo = &imageInfo;
 
-        vkUpdateDescriptorSets(*vkDevice, 0, &ds, 0, nullptr);
+        vkUpdateDescriptorSets(*vkDevice, 1, &ds, 0, nullptr);
 
     }
 }
@@ -617,12 +614,21 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                             if (uvColor)
                             {
                                 uvColor->use(vkCmd);
+
+                                if (useVulkan)
+                                {
+                                    bindTexture(texIndex, uvColor, true, vkDevice);
+                                }
+
                             }
                         }
 
                         else{
 
-                            glBindTexture(GL_TEXTURE_2D, 0);
+                            if (!useVulkan)
+                            {
+                                glBindTexture(GL_TEXTURE_2D, 0);
+                            }
 
                             if (justColor)
                             {
