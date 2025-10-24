@@ -501,37 +501,39 @@ void PicsContainer::drawVA(void * vertices,
         }
 
         void* colorData;
+
+
         vkMapMemory(*vkDevice,
                     (uvsCount) ? shader->vkVertexBuffersMemory[2] : shader->vkVertexBuffersMemory[1],
                     vkColorBufferOffset,
-                    sizeof(float) * vertexCount * 4,
+                    sizeof(float) * vertexCount * 2,
                     0,
                     &colorData);
-        memcpy(colorData, colors, sizeof(float) * vertexCount * 4);
+        memcpy(colorData, colors, sizeof(float) * vertexCount * 2);
         vkUnmapMemory(*vkDevice, (uvsCount) ? shader->vkVertexBuffersMemory[2] : shader->vkVertexBuffersMemory[1]);
 
-        VkDeviceSize offsets[] = {vkVertexBufferOffset, vkUVsBufferOffset, vkColorBufferOffset};
-        VkDeviceSize doffsets[] = {vkVertexBufferOffset, vkColorBufferOffset};
-
-        vkCmdBindVertexBuffers(*vkCmd, 0, 1, &shader->vkVertexBuffers[0], offsets);
+        vkCmdBindVertexBuffers(*vkCmd, 0, 1, &shader->vkVertexBuffers[0], &vkVertexBufferOffset);
 
         if (uvsCount)
         {
-            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], offsets);
-            vkUVsBufferOffset += vertexCount * sizeof(float);
-            vkCmdBindVertexBuffers(*vkCmd, 2, 1, &shader->vkVertexBuffers[2], offsets);
-            vkColorBufferOffset += vertexCount * sizeof(float) * 2;
+            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], &vkUVsBufferOffset);
+            vkCmdBindVertexBuffers(*vkCmd, 2, 1, &shader->vkVertexBuffers[2], &vkColorBufferOffset);
         }
         else
         {
-            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], doffsets);
-            vkColorBufferOffset += vertexCount * sizeof(float) * 2;
+            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], &vkColorBufferOffset);
         }
 
         vkCmdBindDescriptorSets(*vkCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->vkPipelineLayout, 0, 1, &shader->vkDS, 0, nullptr);
 
         vkCmdDraw(*vkCmd, vertexCount / 2, 1, 0, 0);
 
+        if (uvsCount)
+        {
+            vkUVsBufferOffset += vertexCount * sizeof(float);
+        }
+
+        vkColorBufferOffset += (vertexCount * sizeof(float)*2);
         vkVertexBufferOffset += vertexCount * sizeof(float);
 
     }
@@ -564,6 +566,7 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                               VkDevice*        vkDevice)
 {
 
+        //printf("=============\n");
         vkVertexBufferOffset = 0;
         vkUVsBufferOffset = 0;
         vkColorBufferOffset = 0;

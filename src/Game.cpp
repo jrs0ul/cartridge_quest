@@ -2765,8 +2765,8 @@ void Game::render(bool useVulkan)
 //-------------------------------------
 void Game::DrawTitleScreen()
 {
-    pics.draw(0, 320, 180, 0, true);
-    pics.draw(16, 0,0,0);
+    pics.draw(0, 320, 180, 0, true, 1.f, 1.f, 0.f, COLOR(1.f, 1.f, 1.f, 1.f), COLOR(1.f, 0.f, 0.f, 1.f));
+    pics.draw(16, 0, 0, 0, false, 1.f, 1.f, 0.f, COLOR(1.f, 1, 1, 1.f), COLOR(1.f, 1.f, 1.f, 1.f));
 
     char buf[80];
 
