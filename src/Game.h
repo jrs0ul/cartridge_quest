@@ -181,6 +181,7 @@ public:
     char DocumentPath[255];
     bool Works;
     bool windowed;
+    int renderer; //renderer index from the config file
     unsigned ScreenWidth;
     unsigned ScreenHeight;
     float TimeTicks;

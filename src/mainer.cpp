@@ -291,7 +291,7 @@ int main(int argc, char* argv[])
 
     const char* title = "WD40";
 
-    const bool USE_VULKAN = true;
+    const bool USE_VULKAN = (bool)Game.renderer;
 
     if (!SDL.initWindow(title, "icon1.bmp", Game.windowed, USE_VULKAN))
     {
@@ -326,7 +326,6 @@ int main(int argc, char* argv[])
     ConfigureGraphicsLib(USE_VULKAN);
 
     Game.TimeTicks = SDL_GetTicks();
-    
 
     SDL_ShowCursor(false);
 

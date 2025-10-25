@@ -234,6 +234,7 @@ bool SDLVideo::initWindow(const char * title,
 
     if (!useVulkan)
     {
+        printf("Renderer: OPENGL\n");
 
         SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 8);
         SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
@@ -248,6 +249,7 @@ bool SDLVideo::initWindow(const char * title,
     }
     else  //Vulkan
     {
+        printf("Renderer: VULKAN\n");
         SDL_Vulkan_LoadLibrary(nullptr);
 
         _flags = SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN;

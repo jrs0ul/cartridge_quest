@@ -566,7 +566,6 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                               VkDevice*        vkDevice)
 {
 
-        //printf("=============\n");
         vkVertexBufferOffset = 0;
         vkUVsBufferOffset = 0;
         vkColorBufferOffset = 0;

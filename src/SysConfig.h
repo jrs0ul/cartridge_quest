@@ -15,9 +15,11 @@
         int screenScaleY;
         int useWindowed;
         int soundFXVolume;
+        int renderIdx;
 
 
         SystemConfig(){
+            renderIdx = 0; //OPENGL
             musicVolume = 0.2f;
 
             useWindowed = false;

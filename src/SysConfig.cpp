@@ -30,6 +30,15 @@
                 musicVolume = atof(ctmp);
             }
 
+            nod = 0;
+            nod = settings->getNode(L"Renderer");
+            if (nod)
+            {
+                wcscpy(tmp, nod->getValue());
+                wcstombs(ctmp, tmp, 100);
+                renderIdx = atoi(ctmp);
+            }
+
 
             nod = 0;
             nod = settings->getNode(L"ScreenWidth");
@@ -103,6 +112,13 @@ bool SystemConfig::write(const char * config)
         _width.setName(L"MusicVolume");
         _width.setValue(wbuf);
         Settings.addChild(_width);
+
+        XmlNode _Renderer;
+        sprintf(buf, "%d", renderIdx);
+        mbstowcs(wbuf, buf, 255);
+        _Renderer.setName(L"Renderer");
+        _Renderer.setValue(wbuf);
+        Settings.addChild(_Renderer);
 
         XmlNode _ScreenWidth;
         sprintf(buf, "%d", ScreenWidth);
