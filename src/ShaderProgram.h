@@ -15,7 +15,9 @@ class ShaderProgram
     bool isVulkanShader;
 //vulkan stuff
     std::vector<VkPipelineShaderStageCreateInfo> vkShaderStages;
-    VkPipeline       vkPipeline;
+    VkPipeline                                   vkPipeline;
+    VkDescriptorSetLayout                        vkDescriptorSetLayout;
+    VkDescriptorPool                             vkDescriptorPool;
 public:
     VkPipelineLayout vkPipelineLayout;
 
@@ -24,7 +26,7 @@ public:
     VkDescriptorSet  vkDS;
 
     void create(bool useVulkan);
-    void destroy();
+    void destroy(VkDevice* vkDevice = nullptr);
     void getLog(char* string, int len);
     void attach(Shader& sh);
     //only for opengl

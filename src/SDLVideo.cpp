@@ -495,7 +495,6 @@ bool SDLVideo::initWindow(const char * title,
         vkGetSwapchainImagesKHR(vkDevice, vkSwapchain, &vkSwapchainImageCount, vkSwapchainImages.data());
 
 
-
         vkSwapchainImageViews.resize(vkSwapchainImages.size());
 
         for (uint32_t i = 0; i < vkSwapchainImages.size(); i++)
@@ -504,9 +503,6 @@ bool SDLVideo::initWindow(const char * title,
         }
 
         getSupportedDepthFormat(vkPhysicalDevice, &vkDepthFormat);
-
-        VkImage depthImage;
-        VkDeviceMemory depthImageMemory;
 
         createImage(vkDevice,
                     vkPhysicalDevice,
@@ -658,6 +654,24 @@ void SDLVideo::quit(bool useVulkan)
 {
     if (useVulkan)
     {
+
+        vkDestroyCommandPool(vkDevice, vkCommandPool, nullptr);
+
+        for (size_t i = 0; i < vkSwapchainImageViews.size(); ++i)
+        {
+            vkDestroyFramebuffer(vkDevice, vkSwapchainFramebuffers[i], nullptr);
+        }
+
+        vkDestroyRenderPass(vkDevice, vkRenderPass, nullptr);
+        vkFreeMemory(vkDevice, depthImageMemory, nullptr);
+        vkDestroyImage(vkDevice, depthImage, nullptr);
+
+        for (uint32_t i = 0; i < vkSwapchainImages.size(); ++i)
+        {
+            vkDestroyImageView(vkDevice, vkSwapchainImageViews[i], nullptr);
+        }
+
+        vkDestroySwapchainKHR(vkDevice, vkSwapchain, nullptr);
         vkDestroyDevice(vkDevice, nullptr);
         vkDestroyInstance(vkInstance, nullptr);
     }

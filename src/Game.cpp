@@ -4200,7 +4200,10 @@ void Game::destroy()
 
     mapas.destroy();
     mapai.Destroy();
-    pics.destroy();
+    pics.destroy(vulkanDevice);
 
     bulbox.destroy();
+
+    defaultShader.destroy(vulkanDevice);
+    colorShader.destroy(vulkanDevice);
 }

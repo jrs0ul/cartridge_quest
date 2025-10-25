@@ -32,7 +32,6 @@
 
 
 #include "Image.h"
-#include "DArray.h"
 #include "Colors.h"
 #include "ShaderProgram.h"
 
@@ -54,7 +53,7 @@ struct PicData{
     int height;
     int filter;
 
-    DArray<Sprite> sprites;
+    std::vector<Sprite> sprites;
 
 
     //additional data for faster rendering
@@ -105,14 +104,16 @@ struct Texture
 };
 
 class PicsContainer{
-    std::vector<Texture> vkTextures; // for vulkan
-    DArray<GLuint>  glTextures; // for opengl
-    DArray<PicData> PicInfo;
-    DArray<SpriteBatchItem> batch;
+    std::vector<Texture>         vkTextures; // for vulkan
+    std::vector<GLuint>          glTextures; // for opengl
+    std::vector<PicData>         picInfo;
+    std::vector<SpriteBatchItem> batch;
 
     VkDeviceSize vkVertexBufferOffset;
     VkDeviceSize vkUVsBufferOffset;
     VkDeviceSize vkColorBufferOffset;
+
+    bool isVulkan;
 public:
     void drawVA(void * vertices, void * uvs, void *colors,
                 unsigned uvsCount, unsigned vertexCount,
@@ -128,7 +129,7 @@ private:
                          GLuint texname = 0);
 
 public:
-    PicsContainer(){}
+    PicsContainer(){ isVulkan = false; }
 #ifndef __ANDROID__
     bool initContainer(const char* list, bool useVulkan = false);
 #else
@@ -153,9 +154,12 @@ public:
 #endif
 
 
-    void destroy();
+    void destroy(VkDevice* vkDevice = nullptr);
 
-    void bindTexture(unsigned long index, ShaderProgram* shader, bool useVulkan = false, VkDevice* vkDevice = nullptr);
+    void bindTexture(unsigned long index, 
+                     ShaderProgram* shader, 
+                     bool useVulkan = false, 
+                     VkDevice* vkDevice = nullptr);
 
     //adds sprite to batch
     void draw( long textureIndex,
@@ -176,16 +180,16 @@ public:
                    VkCommandBuffer* vkCmd = nullptr,
                    VkDevice* vkDevice = nullptr);
 
-    GLuint getGLName(unsigned long index);
-    unsigned getTextureCount(){return vkTextures.size();}
-    PicData* getInfo(unsigned long index);
-    unsigned long count(){return PicInfo.count();}
-    int findByName(const char* picname, bool debug = false);
+    GLuint        getGLName(unsigned long index);
+    unsigned      getTextureCount(){return vkTextures.size();}
+    PicData*      getInfo(unsigned long index);
+    unsigned long count(){return picInfo.size();}
+    int           findByName(const char* picname, bool debug = false);
     //to make textures from images loaded in defferent threads
-    void makeTexture(Image& img, 
+    void makeTexture(Image& img,
                      const char * name,
                      unsigned long index,
-                     int twidth, int theight, int filter=0);
+                     int twidth, int theight, int filter = 0);
 #ifndef __ANDROID__
     bool loadFile(const char* file, unsigned long index,
                              int twidth, int theight, int filter);

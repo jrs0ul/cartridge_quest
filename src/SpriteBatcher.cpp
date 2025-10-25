@@ -29,7 +29,7 @@
 
 GLuint PicsContainer::getGLName(unsigned long index)
 {
-    if (index < glTextures.count())
+    if (index < glTextures.size())
     {
         return glTextures[index];
     }
@@ -42,7 +42,7 @@ PicData* PicsContainer::getInfo(unsigned long index)
 {
     if (index < vkTextures.size())
     {
-        return &PicInfo[index];
+        return &picInfo[index];
     }
 
     return 0;
@@ -204,7 +204,7 @@ bool PicsContainer::load(const char* list, AAssetManager* assman,
         return false;
     }
 
-    for (unsigned long i = 0; i < PicInfo.count(); i++)
+    for (unsigned long i = 0; i < picInfo.size(); ++i)
     {
 
         Image newImg;
@@ -213,30 +213,30 @@ bool PicsContainer::load(const char* list, AAssetManager* assman,
 #ifdef __ANDROID__
         if (!newImg.loadTga(PicInfo[i].name, imageBits, assman))
         {
-            LOGI("%s not found or corrupted by M$\n", PicInfo[i].name);
+            LOGI("%s not found or corrupted by M$\n", picInfo[i].name);
         }
 #else
-        if (!newImg.loadTga(PicInfo[i].name, imageBits))
+        if (!newImg.loadTga(picInfo[i].name, imageBits))
         {
-            printf("%s not found or corrupted by M$\n", PicInfo[i].name);
+            printf("%s not found or corrupted by M$\n", picInfo[i].name);
         }
 #endif
 
-        PicInfo[i].width  = newImg.width;
-        PicInfo[i].height = newImg.height;
+        picInfo[i].width  = newImg.width;
+        picInfo[i].height = newImg.height;
 
 
-        PicInfo[i].htilew  = PicInfo[i].twidth / 2.0f;
-        PicInfo[i].htileh  = PicInfo[i].theight / 2.0f;
-        PicInfo[i].vframes = PicInfo[i].height / PicInfo[i].theight;
-        PicInfo[i].hframes = PicInfo[i].width / PicInfo[i].twidth;
+        picInfo[i].htilew  = picInfo[i].twidth / 2.0f;
+        picInfo[i].htileh  = picInfo[i].theight / 2.0f;
+        picInfo[i].vframes = picInfo[i].height / picInfo[i].theight;
+        picInfo[i].hframes = picInfo[i].width / picInfo[i].twidth;
 
 
         if (!useVulkan)
         {
             int filter = GL_NEAREST;
 
-            if (PicInfo[i].filter)
+            if (picInfo[i].filter)
             {
                 filter = GL_LINEAR;
             }
@@ -340,7 +340,7 @@ bool PicsContainer::load(const char* list, AAssetManager* assman,
 
             VkFilter filter = VK_FILTER_NEAREST;
 
-            if (PicInfo[i].filter)
+            if (picInfo[i].filter)
             {
                 filter = VK_FILTER_LINEAR;
             }
@@ -418,19 +418,22 @@ void PicsContainer::draw(
     nb.scaleX = scaleX;
     nb.scaleY = scaleY;
     nb.rotationAngle = rotationAngle;
-    if (!flipColors){
+
+    if (!flipColors)
+    {
         nb.upColor[0] = upColor;
         nb.upColor[1] = upColor;
         nb.dwColor[0] = dwColor;
         nb.dwColor[1] = dwColor;
     }
-    else{
+    else
+    {
         nb.upColor[0] = upColor;
         nb.dwColor[0] = upColor;
         nb.upColor[1] = dwColor;
         nb.dwColor[1] = dwColor;
     }
-        batch.add(nb);
+        batch.push_back(nb);
 }
 //---------------------------------------------------
 void PicsContainer::drawVA(void * vertices, 
@@ -573,14 +576,14 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
         switch(method){
               //TODO: complete VA
         default:{
-                DArray<float> vertices;
-                DArray<float> uvs;
+                std::vector<float> vertices;
+                std::vector<float> uvs;
                 float * colors = 0;
                 unsigned colorIndex = 0;
 
-                if (batch.count())
+                if (batch.size())
                 {
-                    colors = (float*)malloc(sizeof(float) * 24 * batch.count());
+                    colors = (float*)malloc(sizeof(float) * 24 * batch.size());
                 }
 
                 Vector3D uv(0.0f, 0.0f, 0.0f, 0.0f);
@@ -590,8 +593,8 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
 
                 long texIndex = -1;
 
-                for (unsigned long i = 0; i < batch.count(); i++){
-
+                for (unsigned long i = 0; i < batch.size(); ++i)
+                {
                     PicData * p = 0;
 
                     htilew = 0.5f; htileh = 0.5f;
@@ -599,12 +602,12 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
 
                     if ((batch[i].textureIndex >= 0) && ( batch[i].textureIndex < (long)count()))
                     {
-                        p = &PicInfo[batch[i].textureIndex];
+                        p = &picInfo[batch[i].textureIndex];
                     }
 
                     if (p)
                     {
-                        if (p->sprites.count()) //iregular sprites in atlas
+                        if (p->sprites.size()) //iregular sprites in atlas
                         {
                             Sprite* spr = &(p->sprites[batch[i].frame]);
 
@@ -633,7 +636,7 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                     ShaderProgram* currentShader = uvColor;
 
                     if ((texIndex != batch[i].textureIndex)
-                        && (vertices.count() > 0))
+                        && (vertices.size() > 0))
                     {
                         //let's draw old stuff
                         if ((texIndex >= 0) && (texIndex < (long)count()))
@@ -668,27 +671,27 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                             {
                                 justColor->use(vkCmd);
                                 currentShader = justColor;
-                                uvs.destroy();
+                                uvs.clear();
                             }
                         }
 
-                        drawVA(vertices.getData(), uvs.getData(), colors,
-                               uvs.count(), vertices.count(), currentShader, useVulkan, vkCmd, vkDevice);
+                        drawVA(vertices.data(), uvs.data(), colors,
+                               uvs.size(), vertices.size(), currentShader, useVulkan, vkCmd, vkDevice);
 
-                        vertices.destroy();
-                        uvs.destroy();
+                        vertices.clear();
+                        uvs.clear();
                         colorIndex = 0;
 
                 }
                 texIndex = batch[i].textureIndex;
 
                 //append to arrays
-                uvs.add(uv.v[0]); uvs.add(uv.v[2]);
-                uvs.add(uv.v[1]); uvs.add(uv.v[2]);
-                uvs.add(uv.v[1]); uvs.add(uv.v[3]);
-                uvs.add(uv.v[0]); uvs.add(uv.v[2]);
-                uvs.add(uv.v[1]); uvs.add(uv.v[3]);
-                uvs.add(uv.v[0]); uvs.add(uv.v[3]); 
+                uvs.push_back(uv.v[0]); uvs.push_back(uv.v[2]);
+                uvs.push_back(uv.v[1]); uvs.push_back(uv.v[2]);
+                uvs.push_back(uv.v[1]); uvs.push_back(uv.v[3]);
+                uvs.push_back(uv.v[0]); uvs.push_back(uv.v[2]);
+                uvs.push_back(uv.v[1]); uvs.push_back(uv.v[3]);
+                uvs.push_back(uv.v[0]); uvs.push_back(uv.v[3]); 
 
                 //----
                     memcpy(&colors[colorIndex], batch[i].upColor[0].c,
@@ -722,44 +725,44 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                         float hheight = htileh * batch[i].scaleY;
 
 
-                        vertices.add(batch[i].x - hwidth); 
-                        vertices.add(batch[i].y - hheight);
+                        vertices.push_back(batch[i].x - hwidth); 
+                        vertices.push_back(batch[i].y - hheight);
 
-                        vertices.add(batch[i].x + hwidth); 
-                        vertices.add(batch[i].y - hheight);
+                        vertices.push_back(batch[i].x + hwidth); 
+                        vertices.push_back(batch[i].y - hheight);
 
-                        vertices.add(batch[i].x + hwidth); 
-                        vertices.add(batch[i].y + hheight);
+                        vertices.push_back(batch[i].x + hwidth); 
+                        vertices.push_back(batch[i].y + hheight);
 
-                        vertices.add(batch[i].x - hwidth); 
-                        vertices.add(batch[i].y - hheight);
+                        vertices.push_back(batch[i].x - hwidth); 
+                        vertices.push_back(batch[i].y - hheight);
 
-                        vertices.add(batch[i].x + hwidth); 
-                        vertices.add(batch[i].y + hheight);
+                        vertices.push_back(batch[i].x + hwidth); 
+                        vertices.push_back(batch[i].y + hheight);
 
-                        vertices.add(batch[i].x - hwidth); 
-                        vertices.add(batch[i].y + hheight);
+                        vertices.push_back(batch[i].x - hwidth); 
+                        vertices.push_back(batch[i].y + hheight);
                     }
                     else{
 
-                        vertices.add(batch[i].x);
-                        vertices.add(batch[i].y);
+                        vertices.push_back(batch[i].x);
+                        vertices.push_back(batch[i].y);
 
-                        vertices.add(batch[i].x + twidth * batch[i].scaleX);
-                        vertices.add(batch[i].y);
+                        vertices.push_back(batch[i].x + twidth * batch[i].scaleX);
+                        vertices.push_back(batch[i].y);
 
-                        vertices.add(batch[i].x + twidth * batch[i].scaleX); 
-                        vertices.add(batch[i].y + theight * batch[i].scaleY);
+                        vertices.push_back(batch[i].x + twidth * batch[i].scaleX); 
+                        vertices.push_back(batch[i].y + theight * batch[i].scaleY);
 
-                        vertices.add(batch[i].x);
-                        vertices.add(batch[i].y);
+                        vertices.push_back(batch[i].x);
+                        vertices.push_back(batch[i].y);
 
-                        vertices.add(batch[i].x + twidth * batch[i].scaleX); 
-                        vertices.add(batch[i].y + theight * batch[i].scaleY);
+                        vertices.push_back(batch[i].x + twidth * batch[i].scaleX); 
+                        vertices.push_back(batch[i].y + theight * batch[i].scaleY);
 
 
-                        vertices.add(batch[i].x); 
-                        vertices.add(batch[i].y + theight * batch[i].scaleY);
+                        vertices.push_back(batch[i].x); 
+                        vertices.push_back(batch[i].y + theight * batch[i].scaleY);
                     }
                 }
                 else{
@@ -781,23 +784,23 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                         float sin_rot_h = si * hheight;
 
 
-                        vertices.add(batch[i].x + cos_rot_w - sin_rot_h); 
-                        vertices.add(batch[i].y + sin_rot_w + cos_rot_h);
+                        vertices.push_back(batch[i].x + cos_rot_w - sin_rot_h); 
+                        vertices.push_back(batch[i].y + sin_rot_w + cos_rot_h);
 
-                        vertices.add(batch[i].x - cos_rot_w - sin_rot_h); 
-                        vertices.add(batch[i].y - sin_rot_w + cos_rot_h);
+                        vertices.push_back(batch[i].x - cos_rot_w - sin_rot_h); 
+                        vertices.push_back(batch[i].y - sin_rot_w + cos_rot_h);
 
-                        vertices.add(batch[i].x - cos_rot_w + sin_rot_h); 
-                        vertices.add(batch[i].y - sin_rot_w - cos_rot_h);
+                        vertices.push_back(batch[i].x - cos_rot_w + sin_rot_h); 
+                        vertices.push_back(batch[i].y - sin_rot_w - cos_rot_h);
 
-                        vertices.add(batch[i].x + cos_rot_w - sin_rot_h); 
-                        vertices.add(batch[i].y + sin_rot_w + cos_rot_h);
+                        vertices.push_back(batch[i].x + cos_rot_w - sin_rot_h); 
+                        vertices.push_back(batch[i].y + sin_rot_w + cos_rot_h);
 
-                        vertices.add(batch[i].x - cos_rot_w + sin_rot_h); 
-                        vertices.add(batch[i].y - sin_rot_w - cos_rot_h);
+                        vertices.push_back(batch[i].x - cos_rot_w + sin_rot_h); 
+                        vertices.push_back(batch[i].y - sin_rot_w - cos_rot_h);
 
-                        vertices.add(batch[i].x + cos_rot_w + sin_rot_h); 
-                        vertices.add(batch[i].y + sin_rot_w - cos_rot_h);
+                        vertices.push_back(batch[i].x + cos_rot_w + sin_rot_h); 
+                        vertices.push_back(batch[i].y + sin_rot_w - cos_rot_h);
                     }
                     else{
 
@@ -813,30 +816,30 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
 
                         //TODO: fix this
 
-                        vertices.add(batch[i].x); 
-                        vertices.add(batch[i].y);
+                        vertices.push_back(batch[i].x); 
+                        vertices.push_back(batch[i].y);
 
-                        vertices.add(batch[i].x - cos_rot_w - sin_rot_h); 
-                        vertices.add(batch[i].y - sin_rot_w + cos_rot_h);
+                        vertices.push_back(batch[i].x - cos_rot_w - sin_rot_h); 
+                        vertices.push_back(batch[i].y - sin_rot_w + cos_rot_h);
 
-                        vertices.add(batch[i].x - cos_rot_w + sin_rot_h); 
-                        vertices.add(batch[i].y - sin_rot_w - cos_rot_h);
+                        vertices.push_back(batch[i].x - cos_rot_w + sin_rot_h); 
+                        vertices.push_back(batch[i].y - sin_rot_w - cos_rot_h);
 
-                        vertices.add(batch[i].x); 
-                        vertices.add(batch[i].y);
+                        vertices.push_back(batch[i].x); 
+                        vertices.push_back(batch[i].y);
 
-                        vertices.add(batch[i].x - cos_rot_w + sin_rot_h); 
-                        vertices.add(batch[i].y - sin_rot_w - cos_rot_h);
+                        vertices.push_back(batch[i].x - cos_rot_w + sin_rot_h); 
+                        vertices.push_back(batch[i].y - sin_rot_w - cos_rot_h);
 
-                        vertices.add(batch[i].x + cos_rot_w + sin_rot_h); 
-                        vertices.add(batch[i].y + sin_rot_w - cos_rot_h);
+                        vertices.push_back(batch[i].x + cos_rot_w + sin_rot_h); 
+                        vertices.push_back(batch[i].y + sin_rot_w - cos_rot_h);
 
                     }
 
                 }
             } //for
 
-            if (vertices.count() > 0){
+            if (vertices.size() > 0){
 
                 ShaderProgram* currentShader = uvColor;
 
@@ -871,16 +874,16 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
                     {
                         justColor->use(vkCmd);
                         currentShader = justColor;
-                        uvs.destroy();
+                        uvs.clear();
                     }
                 }
 
-                drawVA(vertices.getData(), uvs.getData(), colors,
-                       uvs.count(), vertices.count(), currentShader, useVulkan, vkCmd, vkDevice);
+                drawVA(vertices.data(), uvs.data(), colors,
+                       uvs.size(), vertices.size(), currentShader, useVulkan, vkCmd, vkDevice);
 
 
-                vertices.destroy();
-                uvs.destroy();
+                vertices.clear();
+                uvs.clear();
                 colorIndex = 0;
             }
 
@@ -891,7 +894,7 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
         }
     }
 
-    batch.destroy();
+    batch.clear();
 }
 //-----------------------------------------------------
 void PicsContainer::resizeContainer(unsigned long index,
@@ -901,7 +904,7 @@ void PicsContainer::resizeContainer(unsigned long index,
                                     GLuint texname)
 {
 
-    if (PicInfo.count() < index + 1)
+    if (picInfo.size() < index + 1)
     {
 
         GLuint glui = texname;
@@ -910,15 +913,15 @@ void PicsContainer::resizeContainer(unsigned long index,
         p.theight = theight;
         p.filter = filter;
 
-        for (unsigned i = PicInfo.count(); i < index + 1; i++)
+        for (unsigned i = picInfo.size(); i < index + 1; i++)
         {
-            PicInfo.add(p);
-            glTextures.add(glui);
+            picInfo.push_back(p);
+            glTextures.push_back(glui);
         }
 
         if (createTextures)
         {
-            glGenTextures(1, ((GLuint *)glTextures.getData()) + index);
+            glGenTextures(1, ((GLuint *)glTextures.data()) + index);
         }
 
         char * copy = (char*)malloc(strlen(name)+1);
@@ -928,7 +931,7 @@ void PicsContainer::resizeContainer(unsigned long index,
 
         while (res)
         {
-            strcpy(PicInfo[index].name, res);
+            strcpy(picInfo[index].name, res);
             res = strtok(0, "/");
         }
 
@@ -937,7 +940,7 @@ void PicsContainer::resizeContainer(unsigned long index,
     }
     else
     {
-        PicData * pp = &PicInfo[index];
+        PicData * pp = &picInfo[index];
         pp->twidth = twidth;
         pp->theight = theight;
         pp->filter = filter;
@@ -956,16 +959,16 @@ void PicsContainer::resizeContainer(unsigned long index,
 
         if (glIsTexture(glTextures[index]))
         {
-            glDeleteTextures(1, ((GLuint *)glTextures.getData()) + index);
+            glDeleteTextures(1, ((GLuint *)glTextures.data()) + index);
         }
 
         if (createTextures)
         {
-            glGenTextures(1, ((GLuint *)glTextures.getData()) + index);
+            glGenTextures(1, ((GLuint *)glTextures.data()) + index);
         }
         else
         {
-            *(((GLuint *)glTextures.getData()) + index) = texname;
+            *(((GLuint *)glTextures.data()) + index) = texname;
         }
 
     }
@@ -995,9 +998,6 @@ bool PicsContainer::loadFile(const char* file,
         unsigned short imageBits=0;
 
 
-
-
-
 #ifdef __ANDROID__
         if (!naujas.loadTga(file, imageBits, man)){
             LOGI("%s not found or corrupted by M$\n", file);
@@ -1012,18 +1012,18 @@ bool PicsContainer::loadFile(const char* file,
 
         resizeContainer(index, twidth, theight, filter, file);
 
-        PicInfo[index].width = naujas.width;
-        PicInfo[index].height = naujas.height;
+        picInfo[index].width = naujas.width;
+        picInfo[index].height = naujas.height;
 
 
-        PicInfo[index].htilew =PicInfo[index].twidth/2.0f;
-        PicInfo[index].htileh =PicInfo[index].theight/2.0f;
-        PicInfo[index].vframes=PicInfo[index].height/PicInfo[index].theight;
-        PicInfo[index].hframes=PicInfo[index].width/PicInfo[index].twidth;
+        picInfo[index].htilew  = picInfo[index].twidth / 2.0f;
+        picInfo[index].htileh  = picInfo[index].theight / 2.0f;
+        picInfo[index].vframes = picInfo[index].height / picInfo[index].theight;
+        picInfo[index].hframes = picInfo[index].width / picInfo[index].twidth;
 
         int filtras = GL_NEAREST;
 
-        if (PicInfo[index].filter)
+        if (picInfo[index].filter)
         {
             filtras = GL_LINEAR;
         }
@@ -1060,18 +1060,18 @@ void PicsContainer::makeTexture(Image& img,
 
     resizeContainer(index, twidth, theight, filter, name);
 
-    PicInfo[index].width = img.width;
-    PicInfo[index].height = img.height;
+    picInfo[index].width = img.width;
+    picInfo[index].height = img.height;
 
 
-    PicInfo[index].htilew = PicInfo[index].twidth/2.0f;
-    PicInfo[index].htileh = PicInfo[index].theight/2.0f;
-    PicInfo[index].vframes = PicInfo[index].height/PicInfo[index].theight;
-    PicInfo[index].hframes = PicInfo[index].width/PicInfo[index].twidth;
+    picInfo[index].htilew  = picInfo[index].twidth / 2.0f;
+    picInfo[index].htileh  = picInfo[index].theight / 2.0f;
+    picInfo[index].vframes = picInfo[index].height / picInfo[index].theight;
+    picInfo[index].hframes = picInfo[index].width / picInfo[index].twidth;
 
     int filtras = GL_NEAREST;
 
-    if (PicInfo[index].filter)
+    if (picInfo[index].filter)
     {
         filtras = GL_LINEAR;
     }
@@ -1112,7 +1112,7 @@ bool PicsContainer::loadFile(unsigned long index,
     char buf[1024];
 
     sprintf(dir, "%spics/", BasePath);
-    sprintf(buf, "%s%s", dir, PicInfo[index].name);
+    sprintf(buf, "%s%s", dir, picInfo[index].name);
 
 #ifndef __ANDROID__
     if (!naujas.loadTga(buf, imageBits)){
@@ -1120,7 +1120,7 @@ bool PicsContainer::loadFile(unsigned long index,
     if (!naujas.loadTga(buf, imageBits, 0)){
 #endif
 
-        sprintf(buf, "base/pics/%s", PicInfo[index].name);
+        sprintf(buf, "base/pics/%s", picInfo[index].name);
         puts("Let's try base/");
 #ifndef __ANDROID__
         if (!naujas.loadTga(buf, imageBits)){
@@ -1133,18 +1133,21 @@ bool PicsContainer::loadFile(unsigned long index,
 
     }
 
-    PicInfo[index].width = naujas.width;
-    PicInfo[index].height = naujas.height;
+    picInfo[index].width = naujas.width;
+    picInfo[index].height = naujas.height;
 
 
-    PicInfo[index].htilew = PicInfo[index].twidth / 2.0f;
-    PicInfo[index].htileh = PicInfo[index].theight / 2.0f;
-    PicInfo[index].vframes = PicInfo[index].height / PicInfo[index].theight;
-    PicInfo[index].hframes = PicInfo[index].width / PicInfo[index].twidth;
+    picInfo[index].htilew  = picInfo[index].twidth / 2.0f;
+    picInfo[index].htileh  = picInfo[index].theight / 2.0f;
+    picInfo[index].vframes = picInfo[index].height / picInfo[index].theight;
+    picInfo[index].hframes = picInfo[index].width / picInfo[index].twidth;
 
     int filtras = GL_NEAREST;
-    if (PicInfo[index].filter)
+
+    if (picInfo[index].filter)
+    {
         filtras = GL_LINEAR;
+    }
 
 
     glBindTexture(GL_TEXTURE_2D, glTextures[index]);
@@ -1176,19 +1179,19 @@ void PicsContainer::attachTexture(GLuint textureID, unsigned long index,
 {
 
     resizeContainer(index, twidth, theight, filter, "lol", false, textureID);
-    PicInfo[index].width = width;
-    PicInfo[index].height = height;
+    picInfo[index].width = width;
+    picInfo[index].height = height;
 
 
-    PicInfo[index].htilew = PicInfo[index].twidth / 2.0f;
-    PicInfo[index].htileh = PicInfo[index].theight / 2.0f;
-    PicInfo[index].vframes = PicInfo[index].height / PicInfo[index].theight;
-    PicInfo[index].hframes = PicInfo[index].width / PicInfo[index].twidth;
+    picInfo[index].htilew = picInfo[index].twidth / 2.0f;
+    picInfo[index].htileh = picInfo[index].theight / 2.0f;
+    picInfo[index].vframes = picInfo[index].height / picInfo[index].theight;
+    picInfo[index].hframes = picInfo[index].width / picInfo[index].twidth;
 
 
     int filtras = GL_NEAREST;
 
-    if (PicInfo[index].filter)
+    if (picInfo[index].filter)
     {
         filtras = GL_LINEAR;
     }
@@ -1204,22 +1207,25 @@ void PicsContainer::attachTexture(GLuint textureID, unsigned long index,
 
 
 //--------------------------------
-int PicsContainer::findByName(const char* picname, bool debug){
+int PicsContainer::findByName(const char* picname, bool debug)
+{
     unsigned long start = 0;
 
-    if (!PicInfo.count())
+    if (!picInfo.size())
     {
         return -1;
     }
 
-    while ((strcmp(PicInfo[start].name, picname) != 0) && (start < PicInfo.count()))
+    while ((strcmp(picInfo[start].name, picname) != 0) && (start < picInfo.size()))
     {
         if (debug)
-            puts(PicInfo[start].name);
+        {
+            puts(picInfo[start].name);
+        }
         start++;
     }
 
-    if (start == PicInfo.count())
+    if (start == picInfo.size())
     {
         return -1;
     }
@@ -1234,6 +1240,7 @@ bool PicsContainer::initContainer(const char *list, AAssetManager* assman, bool 
 #endif
 {
 
+    isVulkan = useVulkan;
 
     Xml pictureList;
 
@@ -1369,7 +1376,7 @@ bool PicsContainer::initContainer(const char *list, AAssetManager* assman, bool 
 
                             }
 
-                            data.sprites.add(spr);
+                            data.sprites.push_back(spr);
 
                         }
                     }
@@ -1384,19 +1391,19 @@ bool PicsContainer::initContainer(const char *list, AAssetManager* assman, bool 
 
 //            printf(">>>Image: name:%s width:%d height:%d filter%d\n", data.name, data.twidth, data.theight, data.filter);
 #endif
-            PicInfo.add(data);
+            picInfo.push_back(data);
         }
 
         if (!useVulkan)
         {
-            for (unsigned long i = 0; i < PicInfo.count(); i++) 
+            for (unsigned long i = 0; i < picInfo.size(); i++) 
             {
                 GLuint glui = 0;
-                glTextures.add(glui);
+                glTextures.push_back(glui);
             }
 
-            printf("Creating %lu opengl textures\n", PicInfo.count());
-            glGenTextures(PicInfo.count(), (GLuint *)glTextures.getData());
+            printf("Creating %lu opengl textures\n", picInfo.size());
+            glGenTextures(picInfo.size(), (GLuint *)glTextures.data());
         }
     }
 
@@ -1407,39 +1414,57 @@ bool PicsContainer::initContainer(const char *list, AAssetManager* assman, bool 
 }
 
 //----------------------------------
-void PicsContainer::destroy()
+void PicsContainer::destroy(VkDevice* vkDevice)
 {
-    for (unsigned long i = 0; i < glTextures.count(); i++)
+    if (!isVulkan)
     {
-        if (glIsTexture(glTextures[i]))
+        for (unsigned long i = 0; i < glTextures.size(); i++)
         {
-            glDeleteTextures(1, ((GLuint *)glTextures.getData()) + i);
+            if (glIsTexture(glTextures[i]))
+            {
+                glDeleteTextures(1, ((GLuint *)glTextures.data()) + i);
+            }
         }
+
+        glTextures.clear();
     }
-
-    glTextures.destroy();
-    batch.destroy();
-
-    for (unsigned long i = 0; i < PicInfo.count(); ++i)
+    else // Vulkan
     {
-        PicInfo[i].sprites.destroy();
+        printf("Deleting Vulkan textures...\n");
+
+        for (unsigned long i = 0; i < vkTextures.size(); ++i)
+        {
+            vkDestroySampler(*vkDevice, vkTextures[i].vkSampler, nullptr);
+            vkDestroyImageView(*vkDevice, vkTextures[i].vkImageView, nullptr);
+            vkDestroyImage(*vkDevice, vkTextures[i].vkImage, nullptr);
+            vkFreeMemory(*vkDevice, vkTextures[i].vkTextureMemory, nullptr);
+        }
+
+        vkTextures.clear();
     }
 
-    PicInfo.destroy();
+    batch.clear();
+
+    for (unsigned long i = 0; i < picInfo.size(); ++i)
+    {
+        picInfo[i].sprites.clear();
+    }
+
+    picInfo.clear();
 }
 
 //-------------------------------
 void PicsContainer::remove(unsigned long index)
 {
-    if (index < glTextures.count())
+    if (index < glTextures.size())
     {
         if (glIsTexture(glTextures[index]))
         {
-            glDeleteTextures(1, ((GLuint *)glTextures.getData()) + index);
+            glDeleteTextures(1, ((GLuint *)glTextures.data()) + index);
         }
 
-        glTextures.remove(index);
-        PicInfo.remove(index);
+        glTextures.erase(glTextures.begin() + index);
+        picInfo.erase(picInfo.begin() + index);
     }
 
 }

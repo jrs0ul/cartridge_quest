@@ -42,6 +42,11 @@ class SDLVideo{
     VkPhysicalDevice             vkPhysicalDevice;
     VkInstance                   vkInstance;
     VkImage                      vkImage;
+
+    VkImage                      depthImage;
+    VkDeviceMemory               depthImageMemory;
+
+
     VkSwapchainKHR               vkSwapchain;
     VkCommandBuffer              vkCommandBuffer;
     VkSurfaceFormatKHR           vkSurfaceFormat;

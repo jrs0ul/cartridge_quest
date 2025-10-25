@@ -23,9 +23,28 @@ void ShaderProgram::create(bool useVulkan)
     }
 }
 
-void ShaderProgram::destroy()
+void ShaderProgram::destroy(VkDevice* vkDevice)
 {
-    glDeleteProgram(program);
+    if (!isVulkanShader)
+    {
+        glDeleteProgram(program);
+    }
+    else // VULKAN
+    {
+        printf("Deleting vulkan pipeline, shaders and buffers...\n");
+
+        vkDestroyDescriptorPool(*vkDevice, vkDescriptorPool, nullptr);
+        vkDestroyPipeline(*vkDevice, vkPipeline, nullptr);
+        vkDestroyPipelineLayout(*vkDevice, vkPipelineLayout, nullptr);
+        vkDestroyDescriptorSetLayout(*vkDevice, vkDescriptorSetLayout, nullptr);
+
+        for (int i = 0; i < 3; ++i)
+        {
+            vkDestroyBuffer(*vkDevice, vkVertexBuffers[i], nullptr);
+            vkFreeMemory(*vkDevice, vkVertexBuffersMemory[i], nullptr);
+        }
+
+    }
 }
 
 void ShaderProgram::getLog(char* string, int len)
@@ -118,8 +137,6 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
     }
 
 
-    VkDescriptorSetLayout descriptorSetLayout;
-
     VkDescriptorSetLayoutBinding uvsLayoutBinding{};
     uvsLayoutBinding.binding = 0;
     uvsLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -131,7 +148,7 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
     layoutInfo.bindingCount = 1;
     layoutInfo.pBindings = &uvsLayoutBinding;
 
-    if (vkCreateDescriptorSetLayout(*device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) 
+    if (vkCreateDescriptorSetLayout(*device, &layoutInfo, nullptr, &vkDescriptorSetLayout) != VK_SUCCESS) 
     {
         throw std::runtime_error("failed to create descriptor set layout!");
     }
@@ -143,7 +160,7 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
     pipelineLayoutInfo.flags = 0;
 
     pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+    pipelineLayoutInfo.pSetLayouts = &vkDescriptorSetLayout;
 
     pipelineLayoutInfo.pushConstantRangeCount = 0;
     pipelineLayoutInfo.pPushConstantRanges = nullptr;
@@ -312,8 +329,6 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
     }
 
 
-    VkDescriptorPool descriptorPool;
-
     VkDescriptorPoolSize poolSize{};
     poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSize.descriptorCount = 1;
@@ -324,7 +339,7 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
     poolInfo.pPoolSizes = &poolSize;
     poolInfo.maxSets = 1;
 
-    if (vkCreateDescriptorPool(*device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) 
+    if (vkCreateDescriptorPool(*device, &poolInfo, nullptr, &vkDescriptorPool) != VK_SUCCESS) 
     {
         throw std::runtime_error("failed to create descriptor pool!");
     }
@@ -332,9 +347,9 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
 
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
+    allocInfo.descriptorPool = vkDescriptorPool;
     allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &descriptorSetLayout;
+    allocInfo.pSetLayouts = &vkDescriptorSetLayout;
 
     auto res = vkAllocateDescriptorSets(*device, &allocInfo, &vkDS);
 

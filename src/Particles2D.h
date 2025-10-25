@@ -5,6 +5,7 @@
 #include "SpriteBatcher.h"
 #include "Vectors.h"
 #include "Matrix.h"
+#include "DArray.h"
 
 
 struct Particle
