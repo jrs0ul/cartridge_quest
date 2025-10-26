@@ -6,7 +6,7 @@
 #include "GameData.h"
 #include "gui/Text.h"
 
-void Inventory::draw(PicsContainer& pics, DArray<int>& loot, GameData& gd)
+void Inventory::draw(SpriteBatcher& pics, DArray<int>& loot, GameData& gd)
 {
 
     pics.draw(-1, 20, 80, false, 0, 600, 200, 0, COLOR(1,1,1,0.5f), COLOR(1,1,1,0.5f));

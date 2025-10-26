@@ -1,6 +1,7 @@
 #include <cstring>
 #include "Slider.h"
 #include "Text.h"
+#include "../SpriteBatcher.h"
 
 
 void ScroollControl::init(unsigned int dx, unsigned int dy,
@@ -19,11 +20,11 @@ void ScroollControl::init(unsigned int dx, unsigned int dy,
 
 }
 
-void ScroollControl::draw(PicsContainer& pics, unsigned rod, unsigned bg, unsigned font)
+void ScroollControl::draw(SpriteBatcher& pics, unsigned rod, unsigned bg, unsigned font)
 {
     WriteText(getX(), getY(), pics, font, title);
 
-    for (int i=0;i<maxstate/step;i++)
+    for (int i = 0; i < maxstate / step; i++)
     {
         pics.draw(bg, getX() + 10+i, getY() + 16, 2);
     }

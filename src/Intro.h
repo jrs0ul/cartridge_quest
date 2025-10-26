@@ -6,7 +6,7 @@ const int INTRO_TEXT_LINE_COUNT   = 100;
 const int INTRO_SHOW_LETTER_DELAY = 5;
 const int INTRO_LINES_ON_SCREEN   = 18;
 
-class PicsContainer;
+class SpriteBatcher;
 class SystemConfig;
 
 class Intro
@@ -24,5 +24,5 @@ public:
     void logic();
     void reset();
     void load(const char* filename);
-    void draw(PicsContainer& pics, const SystemConfig& sys);
+    void draw(SpriteBatcher& pics, const SystemConfig& sys);
 };

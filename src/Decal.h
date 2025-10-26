@@ -2,7 +2,9 @@
 #define DECAL_H
 
 
-#include "SpriteBatcher.h"
+#include "Colors.h"
+
+class SpriteBatcher;
 
 class Decal
 {
@@ -18,9 +20,10 @@ public:
         x = y = 0.f;
         frame = 0;
     }
-    void draw(PicsContainer& pics, unsigned index,
-                float posx, float posy,
-                int ScreenWidth, int ScreenHeight);
+    void draw(SpriteBatcher& pics,
+              unsigned index,
+              float posx, float posy,
+              int ScreenWidth, int ScreenHeight);
 };
 
 

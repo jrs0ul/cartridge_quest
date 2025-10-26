@@ -89,7 +89,7 @@ void Intro::load(const char* filename)
 }
 
 
-void Intro::draw(PicsContainer& pics, const SystemConfig& sys)
+void Intro::draw(SpriteBatcher& pics, const SystemConfig& sys)
 {
     pics.draw(13, 320, 180, 0, true);
 

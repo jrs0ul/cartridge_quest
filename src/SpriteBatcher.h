@@ -3,7 +3,6 @@
  by jrs0ul(jrs0ul ^at^ gmail ^dot^ com) 2025
  -------------------------------------------
  Sprite batcher
- mod. 2025.09.28
  */
 #pragma once
 
@@ -103,15 +102,22 @@ struct Texture
     VkDeviceMemory  vkTextureMemory;
 };
 
-class PicsContainer{
+//--------------------
+
+class SpriteBatcher
+{
     std::vector<Texture>         vkTextures; // for vulkan
     std::vector<GLuint>          glTextures; // for opengl
     std::vector<PicData>         picInfo;
     std::vector<SpriteBatchItem> batch;
 
-    VkDeviceSize vkVertexBufferOffset;
-    VkDeviceSize vkUVsBufferOffset;
-    VkDeviceSize vkColorBufferOffset;
+
+    VkBuffer                     vkVertexBuffers[3];
+    VkDeviceMemory               vkVertexBuffersMemory[3];
+
+    VkDeviceSize                 vkVertexBufferOffset;
+    VkDeviceSize                 vkUVsBufferOffset;
+    VkDeviceSize                 vkColorBufferOffset;
 
     bool isVulkan;
 public:
@@ -129,11 +135,14 @@ private:
                          GLuint texname = 0);
 
 public:
-    PicsContainer(){ isVulkan = false; }
+    SpriteBatcher(){ isVulkan = false; }
 #ifndef __ANDROID__
-    bool initContainer(const char* list, bool useVulkan = false);
+    bool initContainer(const char* list,
+                       bool useVulkan = false, VkDevice* device = nullptr, VkPhysicalDevice* physical = nullptr);
 #else
-    bool initContainer(const char* list, AAssetManager* assman, bool useVulkan = false);
+    bool initContainer(const char* list,
+                       AAssetManager* assman,
+                       bool useVulkan = false, VkDevice* device = nullptr, VkPhysicalDevice* physical = nullptr);
 #endif
 
     //load textures from the xml file list

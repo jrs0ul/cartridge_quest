@@ -634,7 +634,7 @@ bool CMap::save(const char* path)
 }
 
 //--------------------------------------
-void CMap::draw(PicsContainer& pics, float r, float g, float b, int ScreenWidth, int ScreenHeight)
+void CMap::draw(SpriteBatcher& pics, float r, float g, float b, int ScreenWidth, int ScreenHeight)
 {
 
     unsigned tileset = pics.findByName("pics/tileset.tga");
@@ -705,7 +705,7 @@ void CMap::draw(PicsContainer& pics, float r, float g, float b, int ScreenWidth,
 
 }
 //--------------------------------------
-void CMap::drawEntities(PicsContainer& pics, int ScreenWidth, int ScreenHeight)
+void CMap::drawEntities(SpriteBatcher& pics, int ScreenWidth, int ScreenHeight)
 {
 
     for (unsigned i = 0; i < mons.count(); i++)

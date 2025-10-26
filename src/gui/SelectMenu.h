@@ -38,7 +38,7 @@ class SelectMenu : public BasicControl
         void reset();
         //changes the state depending on input keys
         void getInput(const unsigned char* keys, const unsigned char* oldKeys);
-        void draw( PicsContainer& pics, unsigned rod,  unsigned font, unsigned icons = 0);
+        void draw(SpriteBatcher& pics, unsigned rod,  unsigned font, unsigned icons = 0);
 
 };
 

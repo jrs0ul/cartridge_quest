@@ -2,9 +2,8 @@
 #define _EDITBOX_H_
 
 #include "BasicUiControl.h"
-#include "../SpriteBatcher.h"
 
-
+class SpriteBatcher;
 
 class EditBox : public BasicControl
 {
@@ -17,7 +16,7 @@ public:
         unsigned char pressedKey;
         void init(unsigned int dx, unsigned int dy, const char* dtitl, unsigned char dmaxl);
         void getInput(const char* eventText, unsigned keydown);
-        void draw(PicsContainer& pics, unsigned font);
+        void draw(SpriteBatcher& pics, unsigned font);
         void reset();
 };
 

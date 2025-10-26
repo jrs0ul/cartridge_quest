@@ -92,7 +92,7 @@ void SelectMenu::getInput(const unsigned char* keys, const unsigned char* oldKey
 
     }
     //--------------------------------------------
-    void SelectMenu::draw(PicsContainer& pics, unsigned rod,  unsigned font, unsigned icons)
+    void SelectMenu::draw(SpriteBatcher& pics, unsigned rod,  unsigned font, unsigned icons)
     {
 
         unsigned newcount=0;

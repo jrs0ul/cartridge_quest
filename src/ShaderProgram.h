@@ -21,8 +21,6 @@ class ShaderProgram
 public:
     VkPipelineLayout vkPipelineLayout;
 
-    VkBuffer         vkVertexBuffers[3];
-    VkDeviceMemory   vkVertexBuffersMemory[3];
     VkDescriptorSet  vkDS;
 
     void create(bool useVulkan);
@@ -33,7 +31,6 @@ public:
     void link();
     //for Vulkan only
     void buildVkPipeline(VkDevice* device,
-                         VkPhysicalDevice* physical,
                          VkRenderPass* pass,
                          SystemConfig& config,
                          bool needUvs);

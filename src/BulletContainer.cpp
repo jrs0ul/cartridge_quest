@@ -27,7 +27,7 @@ void CBulletContainer::removeDead()
 }
 //---------------------------
 
-void CBulletContainer::draw(PicsContainer& pics, float posx, float posy, int ScreenWidth, int ScreenHeight)
+void CBulletContainer::draw(SpriteBatcher& pics, float posx, float posy, int ScreenWidth, int ScreenHeight)
 {
     for (unsigned z = 0; z < buls.count(); z++)
     {

@@ -18,7 +18,7 @@ void Collection::getInput(const unsigned char* keys, const unsigned char* oldKey
 
 }
 
-void Collection::draw(PicsContainer& pics)
+void Collection::draw(SpriteBatcher& pics)
 {
     int posY = 150;
 

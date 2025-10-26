@@ -324,7 +324,7 @@ bool Dude::movement(Vector3D dir,
 
 }
 //--------------------------------------------------------------
-void Dude::draw(PicsContainer& pics, unsigned index, float posx, float posy, int ScreenWidth, int ScreenHeight)
+void Dude::draw(SpriteBatcher& pics, unsigned index, float posx, float posy, int ScreenWidth, int ScreenHeight)
 {
 
     const float scale = (shrinked) ? 0.3f : 1.f;
@@ -389,7 +389,7 @@ void Dude::draw(PicsContainer& pics, unsigned index, float posx, float posy, int
 
 }
 //---------------------------------------------
-void Dude::drawParticles(PicsContainer& pics, float posx, float posy, int ScreenWidth, int ScreenHeight)
+void Dude::drawParticles(SpriteBatcher& pics, float posx, float posy, int ScreenWidth, int ScreenHeight)
 {
     const float dudex = x + posx;
     const float dudey = y + posy;

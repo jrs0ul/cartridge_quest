@@ -8,7 +8,7 @@
 #include "WeaponTypes.h"
 
 class CBulletContainer;
-class PicsContainer;
+class SpriteBatcher;
 class CMap;
 
 
@@ -123,8 +123,8 @@ public:
         bool moveGamePad(const Vector3D& movementDir,float radius, CMap& map, bool isCoop);
         void respawn();
 
-        void draw(PicsContainer& pics, unsigned index, float posx, float posy, int ScreenWidth, int ScreenHeight);
-        void drawParticles(PicsContainer& pics, float posx, float posy, int ScreenWidth, int ScreenHeight);
+        void draw(SpriteBatcher& pics, unsigned index, float posx, float posy, int ScreenWidth, int ScreenHeight);
+        void drawParticles(SpriteBatcher& pics, float posx, float posy, int ScreenWidth, int ScreenHeight);
 
         /* shoots or deploys a mine if the entity has some ammo */
         bool shoot(bool useBullets, WeaponTypes weaponType, CBulletContainer* bulcon);

@@ -1,10 +1,13 @@
 #include "Text.h"
+#include "../SpriteBatcher.h"
 
 
 void WriteText(unsigned int x, unsigned int y,
-               PicsContainer& pics, int font,
+               SpriteBatcher& pics, int font,
                const char* s,
-               float scalex, float scaley, COLOR c1, COLOR c2){
+               float scalex, float scaley,
+               COLOR c1, COLOR c2)
+{
 
     for (unsigned int i = 0; i < strlen(s); i++)
     {
@@ -14,7 +17,8 @@ void WriteText(unsigned int x, unsigned int y,
 }
 //-----------------------------------------------------
 void WriteShadedText(unsigned int x, unsigned int y,
-                     PicsContainer& pics, int font, const char* s,
+                     SpriteBatcher& pics,
+                     int font, const char* s,
                      float scalex, float scaley,
                      COLOR c1,
                      COLOR c2,
@@ -25,7 +29,7 @@ void WriteShadedText(unsigned int x, unsigned int y,
 
 }
 //------------------------------------------------
-void DrawNumber(int x, int y, int number, PicsContainer& pics, unsigned index)
+void DrawNumber(int x, int y, int number, SpriteBatcher& pics, unsigned index)
 {
     int arr[7] = {0};
 
@@ -45,7 +49,5 @@ void DrawNumber(int x, int y, int number, PicsContainer& pics, unsigned index)
 
 
 
-
- 
 }
 

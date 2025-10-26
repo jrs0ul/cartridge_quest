@@ -1,9 +1,8 @@
 /*
- The Disarray 
+ The Disarray
  by jrs0ul(jrs0ul ^at^ gmail ^dot^ com) 2025
  -------------------------------------------
  Sprite batcher
- mod. 2025.09.28
  */
 
 #include <cstdio>
@@ -27,7 +26,7 @@
 
 
 
-GLuint PicsContainer::getGLName(unsigned long index)
+GLuint SpriteBatcher::getGLName(unsigned long index)
 {
     if (index < glTextures.size())
     {
@@ -38,7 +37,7 @@ GLuint PicsContainer::getGLName(unsigned long index)
 }
 //-----------------------------
 
-PicData* PicsContainer::getInfo(unsigned long index)
+PicData* SpriteBatcher::getInfo(unsigned long index)
 {
     if (index < vkTextures.size())
     {
@@ -177,7 +176,7 @@ void transitionImageLayout(VkDevice& device,
 
 //-----------------------------
 #ifndef __ANDROID__
-bool PicsContainer::load(const char* list, 
+bool SpriteBatcher::load(const char* list, 
                          bool useVulkan,
                          VkDevice* vkDevice,
                          VkPhysicalDevice* physical,
@@ -185,7 +184,7 @@ bool PicsContainer::load(const char* list,
                          VkQueue* vkGraphicsQueue
                          )
 #else
-bool PicsContainer::load(const char* list, AAssetManager* assman, 
+bool SpriteBatcher::load(const char* list, AAssetManager* assman, 
                          bool useVulkan,
                          VkDevice* vkDevice,
                          VkPhysicalDevice* physical,
@@ -196,9 +195,9 @@ bool PicsContainer::load(const char* list, AAssetManager* assman,
 {
 
 #ifndef __ANDROID__
-    if (!initContainer(list, useVulkan))
+    if (!initContainer(list, useVulkan, vkDevice, physical))
 #else
-    if (!initContainer(list, assman, useVulkan))
+    if (!initContainer(list, assman, useVulkan, vkDevice, physical))
 #endif
     {
         return false;
@@ -368,7 +367,7 @@ bool PicsContainer::load(const char* list, AAssetManager* assman,
     return true;
 }
 //--------------------------------------------------
-void PicsContainer::bindTexture(unsigned long index,
+void SpriteBatcher::bindTexture(unsigned long index,
                                 ShaderProgram* shader,
                                 bool useVulkan,
                                 VkDevice* vkDevice)
@@ -395,7 +394,7 @@ void PicsContainer::bindTexture(unsigned long index,
 }
 
 //---------------------------------------------------
-void PicsContainer::draw(
+void SpriteBatcher::draw(
                 long textureIndex,
                 float x, float y,
                 unsigned int frame,
@@ -436,7 +435,7 @@ void PicsContainer::draw(
         batch.push_back(nb);
 }
 //---------------------------------------------------
-void PicsContainer::drawVA(void * vertices, 
+void SpriteBatcher::drawVA(void * vertices,
                            void * uvs,
                            void *colors,
                            unsigned uvsCount,
@@ -482,49 +481,49 @@ void PicsContainer::drawVA(void * vertices,
     {
         void* vertData;
         vkMapMemory(*vkDevice,
-                    shader->vkVertexBuffersMemory[0],
+                    vkVertexBuffersMemory[0],
                     vkVertexBufferOffset,
                     vertexCount * sizeof(float),
                     0,
                     &vertData);
         memcpy(vertData, vertices, vertexCount * sizeof(float));
-        vkUnmapMemory(*vkDevice, shader->vkVertexBuffersMemory[0]);
+        vkUnmapMemory(*vkDevice, vkVertexBuffersMemory[0]);
 
         if (uvsCount)
         {
             void* uvsData;
             vkMapMemory(*vkDevice,
-                        shader->vkVertexBuffersMemory[1],
+                        vkVertexBuffersMemory[1],
                         vkUVsBufferOffset,
                         sizeof(float) * vertexCount,
                         0,
                         &uvsData);
             memcpy(uvsData, uvs, sizeof(float) * vertexCount);
-            vkUnmapMemory(*vkDevice, shader->vkVertexBuffersMemory[1]);
+            vkUnmapMemory(*vkDevice, vkVertexBuffersMemory[1]);
         }
 
         void* colorData;
 
 
         vkMapMemory(*vkDevice,
-                    (uvsCount) ? shader->vkVertexBuffersMemory[2] : shader->vkVertexBuffersMemory[1],
+                    (uvsCount) ? vkVertexBuffersMemory[2] : vkVertexBuffersMemory[1],
                     vkColorBufferOffset,
                     sizeof(float) * vertexCount * 2,
                     0,
                     &colorData);
         memcpy(colorData, colors, sizeof(float) * vertexCount * 2);
-        vkUnmapMemory(*vkDevice, (uvsCount) ? shader->vkVertexBuffersMemory[2] : shader->vkVertexBuffersMemory[1]);
+        vkUnmapMemory(*vkDevice, (uvsCount) ? vkVertexBuffersMemory[2] : vkVertexBuffersMemory[1]);
 
-        vkCmdBindVertexBuffers(*vkCmd, 0, 1, &shader->vkVertexBuffers[0], &vkVertexBufferOffset);
+        vkCmdBindVertexBuffers(*vkCmd, 0, 1, &vkVertexBuffers[0], &vkVertexBufferOffset);
 
         if (uvsCount)
         {
-            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], &vkUVsBufferOffset);
-            vkCmdBindVertexBuffers(*vkCmd, 2, 1, &shader->vkVertexBuffers[2], &vkColorBufferOffset);
+            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &vkVertexBuffers[1], &vkUVsBufferOffset);
+            vkCmdBindVertexBuffers(*vkCmd, 2, 1, &vkVertexBuffers[2], &vkColorBufferOffset);
         }
         else
         {
-            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], &vkColorBufferOffset);
+            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &vkVertexBuffers[1], &vkColorBufferOffset);
         }
 
         vkCmdBindDescriptorSets(*vkCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->vkPipelineLayout, 0, 1, &shader->vkDS, 0, nullptr);
@@ -552,8 +551,8 @@ Vector3D CalcUvs(PicData * p, unsigned frame)
     float starty = hf * p->theight;
 
     Vector3D result = Vector3D(
-                               (startx*1.0f)/(p->width*1.0f),
-                               ((startx+p->twidth)*1.0f)/(p->width*1.0f),
+                               (startx * 1.0f) / (p->width * 1.0f),
+                               ((startx + p->twidth) * 1.0f) / (p->width * 1.0f),
                                (( p->height - starty) * 1.0f ) / ( p->height * 1.0f ),//- 0.0001f,
                                (( p->height - starty - p->theight ) * 1.0f) / (p->height * 1.0f)
                               );
@@ -561,10 +560,10 @@ Vector3D CalcUvs(PicData * p, unsigned frame)
 }
 
 //----------------------------------------------------------
-void PicsContainer::drawBatch(ShaderProgram * justColor,
-                              ShaderProgram * uvColor,
-                              int method,
-                              bool useVulkan,
+void SpriteBatcher::drawBatch(ShaderProgram *  justColor,
+                              ShaderProgram *  uvColor,
+                              int              method,
+                              bool             useVulkan,
                               VkCommandBuffer* vkCmd,
                               VkDevice*        vkDevice)
 {
@@ -897,7 +896,7 @@ void PicsContainer::drawBatch(ShaderProgram * justColor,
     batch.clear();
 }
 //-----------------------------------------------------
-void PicsContainer::resizeContainer(unsigned long index,
+void SpriteBatcher::resizeContainer(unsigned long index,
                                     int twidth, int theight, int filter,
                                     const char * name,
                                     bool createTextures,
@@ -978,13 +977,13 @@ void PicsContainer::resizeContainer(unsigned long index,
 
 //-----------------------------------------------------
 #ifndef __ANDROID__
-bool PicsContainer::loadFile(const char* file,
+bool SpriteBatcher::loadFile(const char* file,
                              unsigned long index,
                              int twidth,
                              int theight,
                              int filter)
 #else
-bool PicsContainer::loadFile(const char* file,
+bool SpriteBatcher::loadFile(const char* file,
                              unsigned long index,
                              int twidth,
                              int theight,
@@ -1050,7 +1049,7 @@ bool PicsContainer::loadFile(const char* file,
 
 }
 //---------------------------------------------------
-void PicsContainer::makeTexture(Image& img,
+void SpriteBatcher::makeTexture(Image& img,
                                 const char * name,
                                 unsigned long index,
                                 int twidth,
@@ -1099,7 +1098,7 @@ void PicsContainer::makeTexture(Image& img,
 }
 
 //--------------------------------------------------
-bool PicsContainer::loadFile(unsigned long index,
+bool SpriteBatcher::loadFile(unsigned long index,
                              const char * BasePath)
 {
 
@@ -1173,9 +1172,9 @@ bool PicsContainer::loadFile(unsigned long index,
 
 }
 //---------------------------------
-void PicsContainer::attachTexture(GLuint textureID, unsigned long index,
+void SpriteBatcher::attachTexture(GLuint textureID, unsigned long index,
                                   int width, int height,
-                                 int twidth, int theight, int filter)
+                                  int twidth, int theight, int filter)
 {
 
     resizeContainer(index, twidth, theight, filter, "lol", false, textureID);
@@ -1207,7 +1206,7 @@ void PicsContainer::attachTexture(GLuint textureID, unsigned long index,
 
 
 //--------------------------------
-int PicsContainer::findByName(const char* picname, bool debug)
+int SpriteBatcher::findByName(const char* picname, bool debug)
 {
     unsigned long start = 0;
 
@@ -1234,9 +1233,12 @@ int PicsContainer::findByName(const char* picname, bool debug)
 }
 //---------------------------------------
 #ifndef __ANDROID__
-bool PicsContainer::initContainer(const char *list, bool useVulkan)
+bool SpriteBatcher::initContainer(const char* list,
+                                  bool useVulkan, VkDevice* device, VkPhysicalDevice* physical)
 #else
-bool PicsContainer::initContainer(const char *list, AAssetManager* assman, bool useVulkan)
+bool SpriteBatcher::initContainer(const char* list,
+                                  AAssetManager* assman,
+                                  bool useVulkan, VkDevice* device, VkPhysicalDevice* physical)
 #endif
 {
 
@@ -1405,6 +1407,41 @@ bool PicsContainer::initContainer(const char *list, AAssetManager* assman, bool 
             printf("Creating %lu opengl textures\n", picInfo.size());
             glGenTextures(picInfo.size(), (GLuint *)glTextures.data());
         }
+        else // VULKAN
+        {
+            const int MAX_VERTEX_BUFFER_SIZE = sizeof(float) * 4 * 10000;
+
+            for (int i = 0; i < 3; ++i)
+            {
+                VkBufferCreateInfo bufferInfo{};
+                bufferInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+                bufferInfo.size        = MAX_VERTEX_BUFFER_SIZE;
+                bufferInfo.usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+                bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+                if (vkCreateBuffer(*device, &bufferInfo, nullptr, &vkVertexBuffers[i]) != VK_SUCCESS) 
+                {
+                    throw std::runtime_error("failed to create vertex buffer!");
+                }
+
+                VkMemoryRequirements memRequirements;
+                vkGetBufferMemoryRequirements(*device, vkVertexBuffers[i], &memRequirements);
+
+                VkMemoryAllocateInfo allocInfo{};
+                allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+                allocInfo.allocationSize = memRequirements.size;
+                allocInfo.memoryTypeIndex = SDLVideo::findMemoryType(*physical, memRequirements.memoryTypeBits,
+                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+                if (vkAllocateMemory(*device, &allocInfo, nullptr, &vkVertexBuffersMemory[i]) != VK_SUCCESS)
+                {
+                    throw std::runtime_error("failed to allocate vertex buffer memory!");
+                }
+
+                vkBindBufferMemory(*device, vkVertexBuffers[i], vkVertexBuffersMemory[i], 0);
+            }
+        }
+
     }
 
     pictureList.destroy();
@@ -1414,10 +1451,12 @@ bool PicsContainer::initContainer(const char *list, AAssetManager* assman, bool 
 }
 
 //----------------------------------
-void PicsContainer::destroy(VkDevice* vkDevice)
+void SpriteBatcher::destroy(VkDevice* vkDevice)
 {
     if (!isVulkan)
     {
+        
+
         for (unsigned long i = 0; i < glTextures.size(); i++)
         {
             if (glIsTexture(glTextures[i]))
@@ -1441,6 +1480,13 @@ void PicsContainer::destroy(VkDevice* vkDevice)
         }
 
         vkTextures.clear();
+
+        for (int i = 0; i < 3; ++i)
+        {
+            vkFreeMemory(*vkDevice, vkVertexBuffersMemory[i], nullptr);
+            vkDestroyBuffer(*vkDevice, vkVertexBuffers[i], nullptr);
+        }
+
     }
 
     batch.clear();
@@ -1454,7 +1500,7 @@ void PicsContainer::destroy(VkDevice* vkDevice)
 }
 
 //-------------------------------
-void PicsContainer::remove(unsigned long index)
+void SpriteBatcher::remove(unsigned long index)
 {
     if (index < glTextures.size())
     {

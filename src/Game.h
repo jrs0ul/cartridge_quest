@@ -95,7 +95,7 @@ class Game
     SystemConfig sys;
     OggStream music;
     CBulletContainer bulbox;
-    PicsContainer pics;
+    SpriteBatcher pics;
 
 
     SelectMenu mainmenu;

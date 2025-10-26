@@ -80,9 +80,9 @@ public:
 
         void buildCollisionmap();
 
-        void draw(PicsContainer& pics, float r, float g, float b, int ScreenWidth, int ScreenHeight);
+        void draw(SpriteBatcher& pics, float r, float g, float b, int ScreenWidth, int ScreenHeight);
 
-        void drawEntities(PicsContainer& pics, int ScreenWidth, int ScreenHeight);
+        void drawEntities(SpriteBatcher& pics, int ScreenWidth, int ScreenHeight);
 
         bool colide(unsigned x, unsigned y);
         void ReplaceTiles(unsigned char old, unsigned char fresh);

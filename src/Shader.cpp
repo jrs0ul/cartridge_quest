@@ -149,6 +149,8 @@ bool Shader::loadVK(ShaderType shaderType, const char* path, VkDevice* device)
 
     auto vkres = vkCreateShaderModule(*device, &createInfo, nullptr, &vkShaderModule);
 
+    free(binShader);
+
     if (vkres != VK_SUCCESS)
     {
         printf("! Problem creating shader %s !\n", path);

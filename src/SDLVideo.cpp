@@ -3,7 +3,6 @@
  by jrs0ul(jrs0ul ^at^ gmail ^dot^ com) 2025
  -------------------------------------------
  SDL window
- mod. 2025.09.28
  */
 
 #include "SDLVideo.h"
@@ -16,7 +15,7 @@
         #include <SDL2/SDL_opengl.h>
     #endif
 #else
-    #ifdef __APPLE__    
+    #ifdef __APPLE__
         #include <TargetConditionals.h>
         #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
             #include <OpenGLES/ES1/gl.h>
@@ -655,6 +654,15 @@ void SDLVideo::quit(bool useVulkan)
     if (useVulkan)
     {
 
+        for(uint32_t i = 0; i < vkSwapchainImageCount; ++i)
+        {
+            vkDestroyFence(vkDevice, vkFences[i], nullptr);
+        }
+
+        vkDestroySemaphore(vkDevice, vkRenderingFinishedSemaphore, nullptr);
+        vkDestroySemaphore(vkDevice, vkImageAvailableSemaphore, nullptr);
+
+        vkFreeCommandBuffers(vkDevice, vkCommandPool, vkCommandBuffers.size(), vkCommandBuffers.data());
         vkDestroyCommandPool(vkDevice, vkCommandPool, nullptr);
 
         for (size_t i = 0; i < vkSwapchainImageViews.size(); ++i)

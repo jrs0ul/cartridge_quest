@@ -3,7 +3,7 @@
 #include "Particles2D.h"
 #include <cstdlib>
 
-void Particle2DSystem::drawParticles(PicsContainer& pics,
+void Particle2DSystem::drawParticles(SpriteBatcher& pics,
                                      int picIndex, Vector3D shift)
 {
 

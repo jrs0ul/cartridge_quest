@@ -1,5 +1,6 @@
 #include "EditBox.h"
 #include <cstdio>
+#include <SDL2/SDL_scancode.h>
 #include "Text.h"
 
 
@@ -45,13 +46,12 @@ void EditBox::getInput(const char* eventText, unsigned keydown)
 
 }
 //------------------------------------
-void EditBox::draw(PicsContainer& pics, unsigned font)
+void EditBox::draw(SpriteBatcher& pics, unsigned font)
 {
-
 
     WriteShadedText(getX() + 2, getY() + 1, pics, font, title);
 
-    if ((rand()%100)%5==0)
+    if ((rand() % 100) % 5 == 0)
     {
         char tmp[80];
         sprintf(tmp,"%s_",text);   
@@ -67,8 +67,8 @@ void EditBox::draw(PicsContainer& pics, unsigned font)
 void EditBox::reset()
 {
     strcpy(text,"");
-    entered=false;
-    canceled=false;
+    entered = false;
+    canceled = false;
     pressedKey = SDL_SCANCODE_RETURN;
 }
 

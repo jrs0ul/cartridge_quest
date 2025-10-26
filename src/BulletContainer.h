@@ -5,7 +5,7 @@
 
 
 class Bullet;
-class PicsContainer;
+class SpriteBatcher;
 class Dude;
 
 class CBulletContainer
@@ -17,7 +17,7 @@ public:
     CBulletContainer(){}
     int count(){return buls.count();};
     void add(Bullet& newbulet);
-    void draw(PicsContainer& pics, float posx, float posy, int ScreenWidth, int ScreenHeight);
+    void draw(SpriteBatcher& pics, float posx, float posy, int ScreenWidth, int ScreenHeight);
     void update(const bool** colisionGrid, DArray<Dude>& dudes, int mapWidth, int mapHeight);
     void destroy();
     ~CBulletContainer(){}

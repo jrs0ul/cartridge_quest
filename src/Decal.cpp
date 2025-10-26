@@ -1,10 +1,12 @@
 #include "Decal.h"
 #include "Usefull.h"
+#include "SpriteBatcher.h"
 #include "Consts.h"
 
-void Decal::draw(PicsContainer& pics, unsigned index,
-                float posx, float posy,
-                int ScreenWidth, int ScreenHeight)
+void Decal::draw(SpriteBatcher& pics,
+                 unsigned index,
+                 float posx, float posy,
+                 int ScreenWidth, int ScreenHeight)
 {
 
     const float decalX = x + posx;

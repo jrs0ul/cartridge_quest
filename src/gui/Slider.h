@@ -2,7 +2,7 @@
 
 #include "BasicUiControl.h"
 
-class PicsContainer;
+class SpriteBatcher;
 
 class ScroollControl:public BasicControl
 {
@@ -18,6 +18,6 @@ class ScroollControl:public BasicControl
         void init(unsigned int dx, unsigned int dy, const char* dt, long defstate, long dmaxstate, int dstep);
         void reset();
         void getInput(const unsigned char* keys, const unsigned char* oldKeys);
-        void draw( PicsContainer& pics, unsigned rod, unsigned bg,  unsigned font);
+        void draw(SpriteBatcher& pics, unsigned rod, unsigned bg,  unsigned font);
 };
 

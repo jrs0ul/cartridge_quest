@@ -66,7 +66,7 @@ public:
                    COLOR _end);
     void setSizes(float _start, float _end);
     void updateSystem();
-    void drawParticles(PicsContainer& pics,
+    void drawParticles(SpriteBatcher& pics,
                        int picIndex, Vector3D shift = Vector3D(0,0,0));
     void destroy();
     bool isDead(){return _isDead;}
