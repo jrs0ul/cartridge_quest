@@ -23,7 +23,7 @@ public:
     void processInput(int px, int py);
     bool isPointerOnPrevpage(int px, int py);
     bool isPointerOnNextpage(int px, int py);
-    void draw(PicsContainer& pics, unsigned long buttons, unsigned prev, unsigned next);
+    void draw(SpriteBatcher& pics, unsigned long buttons, unsigned prev, unsigned next);
     unsigned state(){return _state;}
     void setSize(unsigned _siz);
     void pageDown();

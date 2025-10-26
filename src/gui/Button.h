@@ -1,8 +1,10 @@
 #ifndef _BUTTON_H_
 #define _BUTTON_H_
 
-#include "../TextureLoader.h"
 #include "BasicUiControl.h"
+#include "../Colors.h"
+
+class SpriteBatcher;
 
 class Button: public BasicControl{
 
@@ -41,9 +43,9 @@ class Button: public BasicControl{
         c = _c;
         
     }
-    void draw(PicsContainer& pics,
+    void draw(SpriteBatcher& pics,
               unsigned picindex, unsigned frame = 0);
-    void drawTextnPicture(PicsContainer& pics, unsigned frame, unsigned index, unsigned font,
+    void drawTextnPicture(SpriteBatcher& pics, unsigned frame, unsigned index, unsigned font,
                           const char* text);
     bool isPointerOnTop(int px, int py);
     void set(int dx, int dy,

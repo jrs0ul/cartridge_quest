@@ -1,8 +1,9 @@
 #include "Button.h"
+#include "../SpriteBatcher.h"
 #include "Text.h"
 
 
-void Button::draw(PicsContainer& pics,
+void Button::draw(SpriteBatcher& pics,
                   unsigned picindex ,
                   unsigned frame){
     PicData* d = pics.getInfo(picindex);
@@ -13,7 +14,7 @@ void Button::draw(PicsContainer& pics,
 }
 //----------------------------------
 
-void  Button::drawTextnPicture(PicsContainer& pics,
+void  Button::drawTextnPicture(SpriteBatcher& pics,
                                unsigned index,
                                unsigned frame,
                                unsigned font,

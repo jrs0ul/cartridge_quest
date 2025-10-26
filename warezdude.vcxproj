@@ -87,12 +87,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_CRT_NON_CONFORMING_WCSTOK;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Programs\LIB\curl-7.69.1\include;D:\Programs\LIB\libogg-1.3.4\include;D:\Programs\OpenAL 1.1 SDK\include;D:\Programs\LIB\SDL2\include;D:\Programs\LIB\libvorbis-1.3.6\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%VULKAN_SDK%\include;D:\Programs\LIB\curl-7.69.1\include;D:\Programs\LIB\libogg-1.3.4\include;D:\Programs\OpenAL 1.1 SDK\include;D:\Programs\LIB\SDL2\include;D:\Programs\LIB\libvorbis-1.3.6\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Programs\LIB\libvorbis-1.3.6\lib;D:\Programs\LIB\libogg-1.3.4\lib;D:\Programs\OpenAL 1.1 SDK\libs\Win32;D:\Programs\LIB\SDL2\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%VULKAN_SDK%\lib;D:\Programs\LIB\libvorbis-1.3.6\lib;D:\Programs\LIB\libogg-1.3.4\lib;D:\Programs\OpenAL 1.1 SDK\libs\Win32;D:\Programs\LIB\SDL2\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -101,12 +101,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_CRT_NON_CONFORMING_WCSTOK;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Programs\LIB\curl-7.69.1\include;D:\Programs\LIB\libogg-1.3.4\include;D:\Programs\OpenAL 1.1 SDK\include;D:\Programs\LIB\SDL2\include;D:\Programs\LIB\libvorbis-1.3.6\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%VULKAN_SDK%\include;D:\Programs\LIB\curl-7.69.1\include;D:\Programs\LIB\libogg-1.3.4\include;D:\Programs\OpenAL 1.1 SDK\include;D:\Programs\LIB\SDL2\include;D:\Programs\LIB\libvorbis-1.3.6\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Programs\LIB\libvorbis-1.3.6\lib;D:\Programs\LIB\libogg-1.3.4\lib;D:\Programs\OpenAL 1.1 SDK\libs\Win64;D:\Programs\LIB\SDL2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%VULKAN_SDK%\lib;D:\Programs\LIB\libvorbis-1.3.6\lib;D:\Programs\LIB\libogg-1.3.4\lib;D:\Programs\OpenAL 1.1 SDK\libs\Win64;D:\Programs\LIB\SDL2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -117,14 +117,16 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_CRT_NON_CONFORMING_WCSTOK;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Programs\LIB\curl-7.69.1\include;D:\Programs\LIB\libogg-1.3.4\include;D:\Programs\OpenAL 1.1 SDK\include;D:\Programs\LIB\SDL2\include;D:\Programs\LIB\libvorbis-1.3.6\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%VULKAN_SDK%\include;D:\Programs\LIB\curl-7.69.1\include;D:\Programs\LIB\libogg-1.3.4\include;D:\Programs\OpenAL 1.1 SDK\include;D:\Programs\LIB\SDL2\include;D:\Programs\LIB\libvorbis-1.3.6\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Programs\LIB\libvorbis-1.3.6\lib;D:\Programs\LIB\libogg-1.3.4\lib;D:\Programs\LIB\curl-7.69.1\builds\libcurl-vc-x86-release-static-ipv6-sspi-winssl\lib;D:\Programs\OpenAL 1.1 SDK\libs\Win32;D:\Programs\LIB\SDL2\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%VULKAN_SDK%\Lib32;D:\Programs\LIB\libvorbis-1.3.6\lib;D:\Programs\LIB\libogg-1.3.4\lib;D:\Programs\LIB\curl-7.69.1\builds\libcurl-vc-x86-release-static-ipv6-sspi-winssl\lib;D:\Programs\OpenAL 1.1 SDK\libs\Win32;D:\Programs\LIB\SDL2\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,14 +137,16 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;_CRT_NON_CONFORMING_WCSTOK;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Programs\LIB\curl-7.69.1\include;D:\Programs\LIB\libogg-1.3.4\include;D:\Programs\OpenAL 1.1 SDK\include;D:\Programs\LIB\SDL2\include;D:\Programs\LIB\libvorbis-1.3.6\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%VULKAN_SDK%\include;D:\Programs\LIB\curl-7.69.1\include;D:\Programs\LIB\libogg-1.3.4\include;D:\Programs\OpenAL 1.1 SDK\include;D:\Programs\LIB\SDL2\include;D:\Programs\LIB\libvorbis-1.3.6\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Programs\LIB\libvorbis-1.3.6\lib;D:\Programs\LIB\libogg-1.3.4\lib;D:\Programs\LIB\curl-7.69.1\builds\libcurl-vc-x86-release-static-ipv6-sspi-winssl\lib;D:\Programs\OpenAL 1.1 SDK\libs\Win64;D:\Programs\LIB\SDL2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%VULKAN_SDK%\Lib32;D:\Programs\LIB\libvorbis-1.3.6\lib;D:\Programs\LIB\libogg-1.3.4\lib;D:\Programs\LIB\curl-7.69.1\builds\libcurl-vc-x86-release-static-ipv6-sspi-winssl\lib;D:\Programs\OpenAL 1.1 SDK\libs\Win64;D:\Programs\LIB\SDL2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -190,12 +194,9 @@
     <ClCompile Include="src\GameData.cpp" />
     <ClCompile Include="src\gui\Button.cpp" />
     <ClCompile Include="src\gui\EditBox.cpp" />
-    <ClCompile Include="src\gui\OnScreenBoard.cpp" />
-    <ClCompile Include="src\gui\Scrollbar.cpp" />
     <ClCompile Include="src\gui\SelectMenu.cpp" />
     <ClCompile Include="src\gui\Slider.cpp" />
     <ClCompile Include="src\gui\Text.cpp" />
-    <ClCompile Include="src\gui\YesNoDialog.cpp" />
     <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\Intro.cpp" />
     <ClCompile Include="src\Inventory.cpp" />
@@ -213,8 +214,8 @@
     <ClCompile Include="src\SDLVideo.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\ShaderProgram.cpp" />
+    <ClCompile Include="src\SpriteBatcher.cpp" />
     <ClCompile Include="src\SysConfig.cpp" />
-    <ClCompile Include="src\TextureLoader.cpp" />
     <ClCompile Include="src\Usefull.cpp" />
     <ClCompile Include="src\Vectors.cpp" />
     <ClCompile Include="src\Xml.cpp" />

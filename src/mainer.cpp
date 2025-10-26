@@ -2,6 +2,7 @@
     #ifdef  _MSC_VER
         #define _CRT_SECURE_NO_DEPRECATE 1
         #pragma comment(lib,"SDL2.lib")
+        #pragma comment(lib,"vulkan-1.lib")
         #pragma comment(lib,"SDL2main.lib")
         #pragma comment(lib,"OpenGl32.lib")
         #pragma comment(lib,"openal32.lib")
@@ -9,7 +10,7 @@
         #pragma comment(lib,"Crypt32.lib")
         #pragma comment(lib,"Wldap32.lib")
         #pragma comment(lib,"Normaliz.lib")
-
+        
         #ifdef _DEBUG
             #pragma comment(lib,"libogg_d.lib")
             #pragma comment(lib,"libvorbis_d.lib")
@@ -56,26 +57,25 @@ const char* GamePadTypes[] = {"Unknown", "XBOX 360", "XBOX One", "Playstation 3"
                               "NVIDIA Shield", "Nintendo Switch Joycon LEFT",
                               "Nintendo Switch Joycon RIGHT", "Nintendo Switch Joycon PAIR"};
 
-Game Game;
-
+Game game;
 
 void ConfigureGraphicsLib(bool useVulkan)
 {
-    Game.init(useVulkan);
+    game.init(useVulkan);
 }
 //-----------------
 void RenderScreen(bool useVulkan)
 {
     SDL.beginRenderPass(useVulkan);
 
-    Game.render(useVulkan);
+    game.render(useVulkan);
 
     SDL.swap(useVulkan);
 }
 //-----------------
 void Logic()
 {
-    Game.logic();
+    game.logic();
 }
 //-----------------
 static void  process_events(){
@@ -92,55 +92,55 @@ static void  process_events(){
 
         case SDL_TEXTINPUT:
         {
-            strcpy(Game.EditText, event.text.text);
+            strcpy(game.EditText, event.text.text);
         } break;
 
         case SDL_KEYUP:
         {
-            Game.globalKEY = 0;
-            Game.globalKeyUp = (char)event.key.keysym.scancode;
+            game.globalKEY = 0;
+            game.globalKeyUp = (char)event.key.keysym.scancode;
         } break;
 
         case SDL_KEYDOWN:{
 
-            Game.globalKEY = (char)event.key.keysym.scancode;
+            game.globalKEY = (char)event.key.keysym.scancode;
             switch( event.key.keysym.sym ) 
             {
                 default:{} break;
-                case SDLK_F1: {++Game.DebugMode; if (Game.DebugMode > 1) Game.DebugMode = 0;} 
+                case SDLK_F1: {++game.DebugMode; if (game.DebugMode > 1) game.DebugMode = 0;} 
             }
         } break;
         case SDL_MOUSEBUTTONUP:{
             Vector3D pos(event.button.x * scaleX, event.button.y * scaleY, 0);
             //printf("up x:%f y:%f\n", pos.x() , pos.y());
-            Game.touches.up.add(pos);
-            Game.touches.allfingersup = true;
+            game.touches.up.add(pos);
+            game.touches.allfingersup = true;
         } break;
         case SDL_MOUSEBUTTONDOWN:{
             Vector3D pos(event.button.x * scaleX, event.button.y * scaleY, 0);
             //printf("down x:%f y:%f\n", pos.x() , pos.y());
-            Game.touches.down.add(pos);
-            Game.touches.allfingersup = false;
+            game.touches.down.add(pos);
+            game.touches.allfingersup = false;
 
         } break;
 
         case SDL_MOUSEWHEEL:
         {
-            Game.Keys[7] = 1;
+            game.Keys[7] = 1;
         } break;
 
         case SDL_MOUSEMOTION:{
             if(SDL_GetMouseState(0, 0)&SDL_BUTTON_LMASK){
                 Vector3D pos(event.button.x * scaleX, event.button.y * scaleY, 0);
                 //printf("motion x:%f y:%f\n", pos.x() , pos.y());
-                Game.touches.move.add(pos);
-                Game.touches.allfingersup = false;
+                game.touches.move.add(pos);
+                game.touches.allfingersup = false;
             }
         }break;
 
 
         case SDL_QUIT:{
-            Game.Works = false;
+            game.Works = false;
         }break;
     
         }
@@ -156,32 +156,32 @@ void CheckKeys()
     SDL_GetMouseState(&_MouseX, &_MouseY);
 
 
-    Game.RelativeMouseX = MouseX;
-    Game.RelativeMouseY = MouseY;
+    game.RelativeMouseX = MouseX;
+    game.RelativeMouseY = MouseY;
 
-    Game.MouseX = _MouseX;
-    Game.MouseY = _MouseY;
+    game.MouseX = _MouseX;
+    game.MouseY = _MouseY;
 
 
-    memcpy(Game.OldKeys, Game.Keys, Game::GameKeyCount);
-    memset(Game.Keys, 0, Game::GameKeyCount);
+    memcpy(game.OldKeys, game.Keys, Game::GameKeyCount);
+    memset(game.Keys, 0, Game::GameKeyCount);
 
-    if ( keys[SDL_SCANCODE_W] )     Game.Keys[0] = 1;
-    if ( keys[SDL_SCANCODE_S] )     Game.Keys[1] = 1;
-    if ( keys[SDL_SCANCODE_A] )     Game.Keys[3] = 1;
-    if ( keys[SDL_SCANCODE_D] )     Game.Keys[2] = 1;
+    if ( keys[SDL_SCANCODE_W] )     game.Keys[0] = 1;
+    if ( keys[SDL_SCANCODE_S] )     game.Keys[1] = 1;
+    if ( keys[SDL_SCANCODE_A] )     game.Keys[3] = 1;
+    if ( keys[SDL_SCANCODE_D] )     game.Keys[2] = 1;
 
-    if ( keys[SDL_SCANCODE_UP] )    Game.Keys[0] = 1;
-    if ( keys[SDL_SCANCODE_DOWN])   Game.Keys[1] = 1;
-    if ( keys[SDL_SCANCODE_LEFT])   Game.Keys[3] = 1;
-    if ( keys[SDL_SCANCODE_RIGHT])  Game.Keys[2] = 1;
+    if ( keys[SDL_SCANCODE_UP] )    game.Keys[0] = 1;
+    if ( keys[SDL_SCANCODE_DOWN])   game.Keys[1] = 1;
+    if ( keys[SDL_SCANCODE_LEFT])   game.Keys[3] = 1;
+    if ( keys[SDL_SCANCODE_RIGHT])  game.Keys[2] = 1;
 
-    if ( keys[SDL_SCANCODE_SPACE])  Game.Keys[4] = 1;
-    if ( keys[SDL_SCANCODE_RETURN]) Game.Keys[4] = 1;
-    if ( keys[SDL_SCANCODE_ESCAPE]) Game.Keys[5] = 1;
-    if ( keys[SDL_SCANCODE_LCTRL])  Game.Keys[6] = 1;
-    if ( keys[SDL_SCANCODE_TAB])    Game.Keys[8] = 1;
-    if ( keys[SDL_SCANCODE_I])      Game.Keys[9] = 1;
+    if ( keys[SDL_SCANCODE_SPACE])  game.Keys[4] = 1;
+    if ( keys[SDL_SCANCODE_RETURN]) game.Keys[4] = 1;
+    if ( keys[SDL_SCANCODE_ESCAPE]) game.Keys[5] = 1;
+    if ( keys[SDL_SCANCODE_LCTRL])  game.Keys[6] = 1;
+    if ( keys[SDL_SCANCODE_TAB])    game.Keys[8] = 1;
+    if ( keys[SDL_SCANCODE_I])      game.Keys[9] = 1;
 
 
     if (gamepad)
@@ -190,80 +190,80 @@ void CheckKeys()
 
         SDL_GameControllerUpdate();
 
-        Game.gamepadLAxis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX) / 1000;
+        game.gamepadLAxis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX) / 1000;
 
-        if (Game.gamepadLAxis.x > 0 && Game.gamepadLAxis.x < DEADZONE)
+        if (game.gamepadLAxis.x > 0 && game.gamepadLAxis.x < DEADZONE)
         {
-            Game.gamepadLAxis.x = 0;
+            game.gamepadLAxis.x = 0;
         }
 
-        if (Game.gamepadLAxis.x < 0 && Game.gamepadLAxis.x > -DEADZONE)
+        if (game.gamepadLAxis.x < 0 && game.gamepadLAxis.x > -DEADZONE)
         {
-            Game.gamepadLAxis.x = 0;
-        }
-
-
-        Game.gamepadLAxis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY) / 1000;
-
-        if (Game.gamepadLAxis.y > 0 && Game.gamepadLAxis.y < DEADZONE)
-        {
-            Game.gamepadLAxis.y = 0;
-        }
-
-        if (Game.gamepadLAxis.y < 0 && Game.gamepadLAxis.y > -DEADZONE)
-        {
-            Game.gamepadLAxis.y = 0;
+            game.gamepadLAxis.x = 0;
         }
 
 
-        Game.gamepadRAxis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX) / 1000;
+        game.gamepadLAxis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTY) / 1000;
 
-        if (Game.gamepadRAxis.x > 0 && Game.gamepadRAxis.x < DEADZONE)
+        if (game.gamepadLAxis.y > 0 && game.gamepadLAxis.y < DEADZONE)
         {
-            Game.gamepadRAxis.x = 0;
+            game.gamepadLAxis.y = 0;
         }
 
-        if (Game.gamepadRAxis.x < 0 && Game.gamepadRAxis.x > -DEADZONE)
+        if (game.gamepadLAxis.y < 0 && game.gamepadLAxis.y > -DEADZONE)
         {
-            Game.gamepadRAxis.x = 0;
-        }
-
-
-
-        Game.gamepadRAxis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY) / 1000;
-
-        if (Game.gamepadRAxis.y > 0 && Game.gamepadRAxis.y < DEADZONE)
-        {
-            Game.gamepadRAxis.y = 0;
-        }
-
-        if (Game.gamepadRAxis.y < 0 && Game.gamepadRAxis.y > -DEADZONE)
-        {
-            Game.gamepadRAxis.y = 0;
+            game.gamepadLAxis.y = 0;
         }
 
 
-        if (Game.doRumble)
+        game.gamepadRAxis.x = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTX) / 1000;
+
+        if (game.gamepadRAxis.x > 0 && game.gamepadRAxis.x < DEADZONE)
+        {
+            game.gamepadRAxis.x = 0;
+        }
+
+        if (game.gamepadRAxis.x < 0 && game.gamepadRAxis.x > -DEADZONE)
+        {
+            game.gamepadRAxis.x = 0;
+        }
+
+
+
+        game.gamepadRAxis.y = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_RIGHTY) / 1000;
+
+        if (game.gamepadRAxis.y > 0 && game.gamepadRAxis.y < DEADZONE)
+        {
+            game.gamepadRAxis.y = 0;
+        }
+
+        if (game.gamepadRAxis.y < 0 && game.gamepadRAxis.y > -DEADZONE)
+        {
+            game.gamepadRAxis.y = 0;
+        }
+
+
+        if (game.doRumble)
         {
             SDL_GameControllerRumble(gamepad, 0x8888, 0x8888, 250);
-            Game.doRumble = false;
+            game.doRumble = false;
         }
 
-        if (SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 1000 > 0) Game.Keys[6] = 1;
-        if (SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 1000 > 0) Game.Keys[6] = 1;
+        if (SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 1000 > 0) game.Keys[6] = 1;
+        if (SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 1000 > 0) game.Keys[6] = 1;
 
-        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_A))             Game.Keys[4] = 1;
-        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_B))             Game.Keys[5] = 1;
+        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_A))             game.Keys[4] = 1;
+        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_B))             game.Keys[5] = 1;
 
-        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_LEFTSHOULDER))  Game.Keys[7] = 1;
-        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)) Game.Keys[7] = 1;
+        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_LEFTSHOULDER))  game.Keys[7] = 1;
+        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)) game.Keys[7] = 1;
 
-        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP))       Game.Keys[0] = 1;
-        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_DOWN))     Game.Keys[1] = 1;
-        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))    Game.Keys[2] = 1;
-        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_LEFT))     Game.Keys[3] = 1;
-        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_START))         Game.Keys[8] = 1;
-        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_X))             Game.Keys[9] = 1;
+        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_UP))       game.Keys[0] = 1;
+        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_DOWN))     game.Keys[1] = 1;
+        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))    game.Keys[2] = 1;
+        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_DPAD_LEFT))     game.Keys[3] = 1;
+        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_START))         game.Keys[8] = 1;
+        if (SDL_GameControllerGetButton(gamepad, SDL_CONTROLLER_BUTTON_X))             game.Keys[9] = 1;
 
     }
 }
@@ -281,29 +281,29 @@ int main(int argc, char* argv[])
 
     char buf[128];
     GetHomePath(buf);
-    sprintf(Game.DocumentPath, "%s.warezdude3", buf);
-    MakeDir(Game.DocumentPath);
-    Game.loadConfig();
+    sprintf(game.DocumentPath, "%s.warezdude3", buf);
+    MakeDir(game.DocumentPath);
+    game.loadConfig();
 
-    printf("%d %d\n", Game.ScreenWidth, Game.ScreenHeight);
-    SDL.setMetrics(Game.ScreenWidth, Game.ScreenHeight);
+    printf("%d %d\n", game.ScreenWidth, game.ScreenHeight);
+    SDL.setMetrics(game.ScreenWidth, game.ScreenHeight);
 
 
     const char* title = "WD40";
 
-    const bool USE_VULKAN = (bool)Game.renderer;
+    const bool USE_VULKAN = (bool)game.renderer;
 
-    if (!SDL.initWindow(title, "icon1.bmp", Game.windowed, USE_VULKAN))
+    if (!SDL.initWindow(title, "icon1.bmp", game.windowed, USE_VULKAN))
     {
-        Game.Works = false;
+        game.Works = false;
     }
 
-    Game.vulkanDevice     = SDL.getVkDevice();
-    Game.vkPhysicalDevice = SDL.getVKPhysicalDevice();
-    Game.vkCmd            = SDL.getVkCmd();
-    Game.vkRenderPass     = SDL.getVkRenderPass();
-    Game.vkCommandPool    = SDL.getVkCommandPool();
-    Game.vkGraphicsQueue  = SDL.getVkGraphicsQueue();
+    game.vulkanDevice     = SDL.getVkDevice();
+    game.vkPhysicalDevice = SDL.getVKPhysicalDevice();
+    game.vkCmd            = SDL.getVkCmd();
+    game.vkRenderPass     = SDL.getVkRenderPass();
+    game.vkCommandPool    = SDL.getVkCommandPool();
+    game.vkGraphicsQueue  = SDL.getVkGraphicsQueue();
 
     SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 
@@ -325,25 +325,25 @@ int main(int argc, char* argv[])
 
     ConfigureGraphicsLib(USE_VULKAN);
 
-    Game.TimeTicks = SDL_GetTicks();
+    game.TimeTicks = SDL_GetTicks();
 
     SDL_ShowCursor(false);
 
 
-    while (Game.Works)
+    while (game.Works)
     {
         if ((SDL_GetTicks() > tick))
         {
 
-            Game.DeltaTime = (SDL_GetTicks() - Game.TimeTicks) / 1000.0f;
-            Game.TimeTicks = SDL_GetTicks();
+            game.DeltaTime = (SDL_GetTicks() - game.TimeTicks) / 1000.0f;
+            game.TimeTicks = SDL_GetTicks();
 
-            Game.Accumulator += Game.DeltaTime;
+            game.Accumulator += game.DeltaTime;
 
-            while (Game.Accumulator >= Game.DT)
+            while (game.Accumulator >= game.DT)
             {
                 Logic();
-                Game.Accumulator -= Game.DT;
+                game.Accumulator -= game.DT;
             }
 
             CheckKeys();
@@ -352,7 +352,7 @@ int main(int argc, char* argv[])
             tick = SDL_GetTicks() + 1000 / 61;
         }
 
-        Game.network();
+        game.network();
 
         SDL_Delay(0.6);
 
@@ -361,7 +361,7 @@ int main(int argc, char* argv[])
     }
     printf("QUITING!\n");
 
-    Game.destroy();
+    game.destroy();
 
 
 

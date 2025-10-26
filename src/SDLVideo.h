@@ -12,6 +12,8 @@
 #ifdef _WIN32
     #ifdef _MSC_VER
         #include <SDL.h>
+        #include <SDL_vulkan.h>
+        #include <vulkan/vulkan.hpp>
     #else
         #include <SDL2/SDL.h>
     #endif

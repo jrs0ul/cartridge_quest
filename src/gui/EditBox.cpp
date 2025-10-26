@@ -1,6 +1,14 @@
 #include "EditBox.h"
 #include <cstdio>
-#include <SDL2/SDL_scancode.h>
+#include <cstdlib>
+#ifdef _WIN32
+    #ifdef _MSC_VER
+        #include <SDL_scancode.h>
+    #else
+        #include <SDL2/SDL_scancode.h>
+    #endif
+#endif
+
 #include "Text.h"
 
 

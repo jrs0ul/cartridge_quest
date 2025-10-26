@@ -3,6 +3,7 @@
 ![gameplay](wd.gif)
 
 ## Game features
+- OpenGL/Vulkan renderer
 - 8 randomly generated levels. 
 - Network-based multiplayer mode (UDP protocol).
 - Collectible game cartridges that act as special abilities for the main character.
@@ -25,6 +26,6 @@ Watch out for the blue monsters, they can eat items. To recover the item you hav
 
 The game can be built using CMake (run the cmake_build.sh on linux), scons or with Visual Studio.
 
-In order to compile you will need: OpenAL, SDL2, libogg/vorbis
+In order to compile you will need: OpenAL, SDL2, libogg/vorbis, Vulkan SDK(used 1.3.290.0 to build the windows binary)
 
 To build the tests you will need GoogleTest.

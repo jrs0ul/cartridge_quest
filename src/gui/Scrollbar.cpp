@@ -1,5 +1,4 @@
 
-
 #include "Scrollbar.h"
 
 void ScrollBar::set(int x, int y, unsigned pSize, unsigned newsize, unsigned defaultState,
@@ -55,7 +54,7 @@ bool ScrollBar::isPointerOnNextpage(int px, int py){
     return nextPage.isPointerOnTop(px, py);
 }
 //----------------------
-void ScrollBar::draw(PicsContainer& pics, unsigned long buttons, unsigned prev, unsigned next){
+void ScrollBar::draw(SpriteBatcher& pics, unsigned long buttons, unsigned prev, unsigned next){
     pics.draw(-1, getX() + ((isVertical) ? 10 : 40), getY() + ((isVertical) ? 40 : 10), 0, false,
               ((isVertical) ? 20 : size * elementSize),
               ((isVertical) ? size * elementSize : 20),

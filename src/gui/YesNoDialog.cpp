@@ -10,7 +10,7 @@ void YesNoDialog::set(int _x, int _y, int w, int h){
     no.init(_x + w - 70, _y + h - 60, 60, 50);
 }
 //-----------------------
-void YesNoDialog::draw(PicsContainer& pics, unsigned font, unsigned decorations,
+void YesNoDialog::draw(SpriteBatcher& pics, unsigned font, unsigned decorations,
           unsigned buttons, unsigned buttonframes, float decorationSize){
     COLOR bgC(0.5f, 0.5f, 0.5f, 0.5f);
     COLOR bgColor(0.4f, 0.4f, 0.4f, 0.9f);
