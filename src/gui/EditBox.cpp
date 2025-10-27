@@ -7,6 +7,8 @@
     #else
         #include <SDL2/SDL_scancode.h>
     #endif
+#else
+    #include <SDL2/SDL_scancode.h>
 #endif
 
 #include "Text.h"

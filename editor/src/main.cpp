@@ -19,7 +19,7 @@
 #include "../../src/SDLVideo.h"
 #include "../../src/Consts.h"
 #include "../../src/Image.h"
-#include "../../src/TextureLoader.h"
+#include "../../src/SpriteBatcher.h"
 #include "../../src/map.h"
 #include "../../src/ShaderProgram.h"
 #include "../../src/Matrix.h"
@@ -67,7 +67,7 @@ const char CHR_BASEPATH[] = "../src/";
 Uint32 tick = 0;
 
 
-PicsContainer pics;
+SpriteBatcher pics;
 
 
 bool _QuitApp = false;
@@ -89,7 +89,7 @@ COLOR tempAttributeColors[4] = {COLOR(1.f, 1.f, 0, 0.2f),
                                 COLOR(0, 1.f, 1.f, 0.2f)};
 
 
-Mygtas mygtai[MAX_BUTTON];
+Button mygtai[MAX_BUTTON];
 
 Vector3D Cross;
 
@@ -540,7 +540,7 @@ static void RenderScreen ( void ){
 
     //----------------------
 
-    video.swap();
+    video.swap(false);
 }
 
 
@@ -549,7 +549,7 @@ static void RenderScreen ( void ){
 void LoadShader(ShaderProgram* shader, const char* name)
 {
     printf("shader load\n");
-    shader->create();
+    shader->create(false);
 
     char error[1024];
     char buf[512];
@@ -560,17 +560,17 @@ void LoadShader(ShaderProgram* shader, const char* name)
     printf("Loading vertex shader...\n");
     sprintf(buf, "../shaders/%s.vert", name);
 #ifdef __ANDROID__
-    vert.load(GL_VERTEX_SHADER, buf, AssetManager);
+    vert.loadGL(VERTEX_SHADER, buf, AssetManager);
 #else
-    vert.load(GL_VERTEX_SHADER, buf);
+    vert.loadGL(VERTEX_SHADER, buf);
 #endif
 
     printf("Loading fragment shader...\n");
     sprintf(buf, "../shaders/%s.frag", name);
 #ifdef __ANDROID__
-    frag.load(GL_FRAGMENT_SHADER, buf, AssetManager);
+    frag.loadGL(FRAGMENT_SHADER, buf, AssetManager);
 #else
-    frag.load(GL_FRAGMENT_SHADER, buf);
+    frag.loadGL(FRAGMENT_SHADER, buf);
 #endif
 
     shader->attach(vert);
@@ -904,7 +904,7 @@ int main ( int argc, char* argv[] )
     height = SCREENH;
 
     video.setMetrics(width, height);
-    if (!video.InitWindow("DUDED", ""))
+    if (!video.initWindow("DUDED", "", true, false))
     {
         QuitApp();
     }
@@ -944,7 +944,7 @@ int main ( int argc, char* argv[] )
     pics.destroy();
     map.destroy();
 
-    video.Quit();
+    video.quit(false);
 
 #ifdef WIN32
 #ifdef _DEBUG

@@ -13,13 +13,13 @@ if sys.platform == 'win32':
                        'imagehlp', 'dxguid', 'dxerr8',
                        'oleaut32', 'shell32', 'version', 'uuid',
                        'openal32', 'vorbisfile', 'ole32', 'imm32', 'user32',
-                       'gdi32', 'winmm', 'dinput8', 'vorbis', 'ogg', 'ws2_32'])
+                       'gdi32', 'winmm', 'dinput8', 'vorbis', 'ogg', 'ws2_32', 'vulkan'])
 else: #Mac OS X
     if sys.platform == 'darwin':
         env['FRAMEWORKS'] = ['Cocoa', 'SDL2', 'OPENGL', 'OpenAL','vorbis', 'Ogg']
         env.Append(LIBS = [ 'iconv', 'pthread'])
     else: #Linux
-        env.Append(LIBS = ['SDL2','GL', 'GLU', 'openal', 'vorbisfile', 'ogg'])
+        env.Append(LIBS = ['SDL2','GL', 'GLU', 'openal', 'vorbisfile', 'ogg', 'vulkan'])
 
 
 env.Program(target = "warezdude", 
@@ -45,7 +45,7 @@ env.Program(target = "warezdude",
                       "src/Xml.cpp",
                       "src/Matrix.cpp",
                       "src/Usefull.cpp",
-                      "src/TextureLoader.cpp",
+                      "src/SpriteBatcher.cpp",
                       "src/Image.cpp",
                       "src/SDLVideo.cpp",
                       "src/Extensions.cpp",

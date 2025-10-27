@@ -18,7 +18,7 @@ else: #Mac OS X
         env['FRAMEWORKS'] = ['Cocoa', 'SDL2', 'OPENGL', 'OpenAL','vorbis', 'Ogg']
         env.Append(LIBS = [ 'iconv', 'pthread'])
     else: #Linux
-        env.Append(LIBS = ['SDL2','GL', 'GLU', 'openal', 'vorbisfile',
+        env.Append(LIBS = ['SDL2','GL', 'GLU', 'openal', 'vorbisfile', 'vulkan',
                            'ogg', 'pthread'])
 
 
@@ -27,9 +27,11 @@ env.Program(target = "DUDED",
                       "src/CIniFile.cpp",
                       "../src/map.cpp",
                       "../src/MapGenerator.cpp",
-                      "../src/TextureLoader.cpp",
+                      "../src/SpriteBatcher.cpp",
                       "../src/Image.cpp",
                       "../src/Dude.cpp",
+                      "../src/Particles2D.cpp",
+                      "../src/bullet.cpp",
                       "../src/Usefull.cpp",
                       "../src/gui/Text.cpp",
                       "../src/Vectors.cpp",

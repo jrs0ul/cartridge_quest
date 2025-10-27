@@ -39,7 +39,9 @@ GLuint SpriteBatcher::getGLName(unsigned long index)
 
 PicData* SpriteBatcher::getInfo(unsigned long index)
 {
-    if (index < vkTextures.size())
+    const uint32_t texCount = (isVulkan) ? vkTextures.size() : glTextures.size();
+
+    if (index < texCount)
     {
         return &picInfo[index];
     }
