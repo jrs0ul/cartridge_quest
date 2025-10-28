@@ -106,14 +106,18 @@ struct Texture
 
 class SpriteBatcher
 {
+
+    static const int VULKAN_BUFFER_COUNT = 3;
+
     std::vector<Texture>         vkTextures; // for vulkan
     std::vector<GLuint>          glTextures; // for opengl
     std::vector<PicData>         picInfo;
     std::vector<SpriteBatchItem> batch;
 
 
-    VkBuffer                     vkVertexBuffers[3];
-    VkDeviceMemory               vkVertexBuffersMemory[3];
+    VkBuffer                     vkVertexBuffers[VULKAN_BUFFER_COUNT];
+    VkDeviceMemory               vkVertexBuffersMemory[VULKAN_BUFFER_COUNT];
+    void*                        vkVertexBufferMappings[VULKAN_BUFFER_COUNT];
 
     VkDeviceSize                 vkVertexBufferOffset;
     VkDeviceSize                 vkUVsBufferOffset;

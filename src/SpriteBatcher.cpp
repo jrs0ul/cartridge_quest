@@ -505,28 +505,23 @@ void SpriteBatcher::drawVA(void * vertices,
         }
 
         void* colorData;
-
-
         vkMapMemory(*vkDevice,
-                    (uvsCount) ? vkVertexBuffersMemory[2] : vkVertexBuffersMemory[1],
+                    vkVertexBuffersMemory[2],
                     vkColorBufferOffset,
                     sizeof(float) * vertexCount * 2,
                     0,
                     &colorData);
         memcpy(colorData, colors, sizeof(float) * vertexCount * 2);
-        vkUnmapMemory(*vkDevice, (uvsCount) ? vkVertexBuffersMemory[2] : vkVertexBuffersMemory[1]);
+        vkUnmapMemory(*vkDevice, vkVertexBuffersMemory[2]);
 
         vkCmdBindVertexBuffers(*vkCmd, 0, 1, &vkVertexBuffers[0], &vkVertexBufferOffset);
 
         if (uvsCount)
         {
             vkCmdBindVertexBuffers(*vkCmd, 1, 1, &vkVertexBuffers[1], &vkUVsBufferOffset);
-            vkCmdBindVertexBuffers(*vkCmd, 2, 1, &vkVertexBuffers[2], &vkColorBufferOffset);
         }
-        else
-        {
-            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &vkVertexBuffers[1], &vkColorBufferOffset);
-        }
+
+        vkCmdBindVertexBuffers(*vkCmd, 2, 1, &vkVertexBuffers[2], &vkColorBufferOffset);
 
         vkCmdBindDescriptorSets(*vkCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->vkPipelineLayout, 0, 1, &shader->vkDS, 0, nullptr);
 
@@ -580,7 +575,7 @@ void SpriteBatcher::drawBatch(ShaderProgram *  justColor,
                 std::vector<float> vertices;
                 std::vector<float> uvs;
                 float * colors = 0;
-                unsigned colorIndex = 0;
+                uint32_t colorIndex = 0;
 
                 if (batch.size())
                 {
@@ -684,6 +679,7 @@ void SpriteBatcher::drawBatch(ShaderProgram *  justColor,
                         colorIndex = 0;
 
                 }
+
                 texIndex = batch[i].textureIndex;
 
                 //append to arrays
@@ -694,34 +690,22 @@ void SpriteBatcher::drawBatch(ShaderProgram *  justColor,
                 uvs.push_back(uv.v[1]); uvs.push_back(uv.v[3]);
                 uvs.push_back(uv.v[0]); uvs.push_back(uv.v[3]); 
 
-                //----
-                    memcpy(&colors[colorIndex], batch[i].upColor[0].c,
-                           sizeof(float) * 4);
-                    colorIndex += 4;
+                const size_t COLOR_DATA_SIZE = sizeof(float) * 4;
+                void* triangleColors[] = {batch[i].upColor[0].c, batch[i].upColor[1].c,
+                                          batch[i].dwColor[1].c, batch[i].upColor[0].c,
+                                          batch[i].dwColor[1].c, batch[i].dwColor[0].c};
 
-                    memcpy(&colors[colorIndex], batch[i].upColor[1].c, 
-                           sizeof(float) * 4);
+                for (int j = 0; j < 6; ++j)
+                {
+                    memcpy(&colors[colorIndex], triangleColors[j], COLOR_DATA_SIZE);
                     colorIndex += 4;
-
-                    memcpy(&colors[colorIndex], batch[i].dwColor[1].c, 
-                           sizeof(float) * 4);
-                    colorIndex += 4;
-
-                    memcpy(&colors[colorIndex], batch[i].upColor[0].c, 
-                           sizeof(float) * 4);
-                    colorIndex += 4;
-
-                    memcpy(&colors[colorIndex], batch[i].dwColor[1].c, 
-                           sizeof(float) * 4);
-                    colorIndex += 4;
-
-                    memcpy(&colors[colorIndex], batch[i].dwColor[0].c, 
-                           sizeof(float) * 4);
-                    colorIndex += 4;
+                }
 
                 //---
-                if (batch[i].rotationAngle == 0.0f){
-                    if (batch[i].useCenter){
+                if (batch[i].rotationAngle == 0.0f)
+                {
+                    if (batch[i].useCenter)
+                    {
                         float hwidth = htilew * batch[i].scaleX;
                         float hheight = htileh * batch[i].scaleY;
 
@@ -744,7 +728,8 @@ void SpriteBatcher::drawBatch(ShaderProgram *  justColor,
                         vertices.push_back(batch[i].x - hwidth); 
                         vertices.push_back(batch[i].y + hheight);
                     }
-                    else{
+                    else
+                    {
 
                         vertices.push_back(batch[i].x);
                         vertices.push_back(batch[i].y);
