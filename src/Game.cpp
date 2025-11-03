@@ -2767,7 +2767,7 @@ void Game::render(bool useVulkan)
     else //VULKAN
     {
         vkCmdPushConstants(*vkCmd,
-                *colorShader.getVkPipelineLayout(),
+                *coolShader.getVkPipelineLayout(),
                 VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(finalM.m), &finalM.m);
 
     }

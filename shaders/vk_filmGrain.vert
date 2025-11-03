@@ -13,7 +13,7 @@ layout(push_constant) uniform PushConstants {
 
 void main(void)
 {
-    gl_Position = pc.ModelViewProjection * vec4(inPosition, 0 , 1);
-    vUvs      = inUvs;
-    vColor    = inColor;
+   gl_Position = pc.ModelViewProjection * vec4(inPosition, 0 , 1);
+   vUvs      = inUvs;
+   vColor    = inColor;
 }

@@ -41,6 +41,7 @@ add_executable(warezdude3
                     src/Usefull.cpp
                     src/SpriteBatcher.cpp
                     src/Image.cpp
+                    src/RenderTexture.cpp
                     src/SDLVideo.cpp
                     src/Extensions.cpp
                     src/ShaderProgram.cpp
@@ -84,6 +85,19 @@ add_custom_command(
     DEPENDS ${CMAKE_SOURCE_DIR}/shaders/vk_default.frag
 )
 
+add_custom_command(
+    OUTPUT ${CMAKE_SOURCE_DIR}/shaders/filmGrain_vert.spv
+    COMMAND glslangValidator ${CMAKE_SOURCE_DIR}/shaders/vk_filmGrain.vert --target-env vulkan1.1 -o ${CMAKE_SOURCE_DIR}/shaders/filmGrain_vert.spv
+    DEPENDS ${CMAKE_SOURCE_DIR}/shaders/vk_filmGrain.vert
+)
+
+add_custom_command(
+    OUTPUT ${CMAKE_SOURCE_DIR}/shaders/filmGrain_frag.spv
+    COMMAND glslangValidator ${CMAKE_SOURCE_DIR}/shaders/vk_filmGrain.frag --target-env vulkan1.1 -o ${CMAKE_SOURCE_DIR}/shaders/filmGrain_frag.spv
+    DEPENDS ${CMAKE_SOURCE_DIR}/shaders/vk_filmGrain.frag
+)
+
+
 
 
 add_custom_target(CompileShaders ALL DEPENDS
@@ -91,6 +105,8 @@ add_custom_target(CompileShaders ALL DEPENDS
     ${CMAKE_SOURCE_DIR}/shaders/justcolor_frag.spv
     ${CMAKE_SOURCE_DIR}/shaders/default_vert.spv
     ${CMAKE_SOURCE_DIR}/shaders/default_frag.spv
+    ${CMAKE_SOURCE_DIR}/shaders/filmGrain_vert.spv
+    ${CMAKE_SOURCE_DIR}/shaders/filmGrain_frag.spv
 )
 
 
