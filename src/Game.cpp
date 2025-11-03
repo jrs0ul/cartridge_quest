@@ -2717,6 +2717,13 @@ void Game::DrawMissionObjectives()
 
 void Game::render(bool useVulkan)
 {
+    if (!useVulkan)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glViewport(0, 0, ScreenWidth, ScreenHeight);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
     FlatMatrix identity;
     MatrixIdentity(identity.m);
 
@@ -2736,7 +2743,6 @@ void Game::render(bool useVulkan)
     }
 
     colorShader.use(vkCmd);
-
     if (!useVulkan)
     {
         int MatrixIDColor = colorShader.getUniformID("ModelViewProjection");
@@ -2750,6 +2756,23 @@ void Game::render(bool useVulkan)
 
     }
 
+    coolShader.use(vkCmd);
+    if (!useVulkan)
+    {
+        int MatrixIDCool = coolShader.getUniformID("ModelViewProjection");
+        glUniformMatrix4fv(MatrixIDCool, 1, GL_FALSE, finalM.m);
+        int timeID = coolShader.getUniformID("uTime");
+        glUniform1f(timeID, TimeTicks / 1000.f);
+    }
+    else //VULKAN
+    {
+        vkCmdPushConstants(*vkCmd,
+                *colorShader.getVkPipelineLayout(),
+                VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(finalM.m), &finalM.m);
+
+    }
+
+
     switch(state)
     {
         case GAMESTATE_TITLE  : DrawTitleScreen();      break;
@@ -2760,6 +2783,17 @@ void Game::render(bool useVulkan)
     }
 
     pics.drawBatch(&colorShader, &defaultShader, 666, useVulkan, vkCmd, vulkanDevice);
+
+    if (!useVulkan)
+    {
+        glFlush();
+        glDisable(GL_BLEND);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        pics.draw(fboTextureIndex, 0, 0, 0, false, sys.screenScaleX, sys.screenScaleY);
+        pics.drawBatch(&colorShader, &coolShader, 666, false);
+        glEnable(GL_BLEND);
+    }
 
 }
 //-------------------------------------
@@ -4111,6 +4145,7 @@ void Game::init(bool useVulkan)
 
         LoadShader(&defaultShader, "default", useVulkan, true);
         LoadShader(&colorShader, "justcolor", useVulkan, false);
+        LoadShader(&coolShader, "filmGrain", useVulkan, true);
 
 
     if (!useVulkan)
@@ -4121,16 +4156,34 @@ void Game::init(bool useVulkan)
 
         glEnable (GL_BLEND);
         glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+        //-----create fbo
+        glGenFramebuffers(1, &fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+        glGenTextures(1, &fboTexture);
+        glBindTexture(GL_TEXTURE_2D, fboTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ScreenWidth, ScreenHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fboTexture, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
    }
    else  //  Vulkan
    {
    }
 
 
-    MatrixOrtho(0.0, ScreenWidth / (float)sys.screenScaleX, ScreenHeight / (float)sys.screenScaleY, 0.0, -400, 400, OrthoMatrix);
+    MatrixOrtho(0.0, ScreenWidth, ScreenHeight, 0.0, -400, 400, OrthoMatrix);
 
     pics.load("pics/imagesToLoad.xml", useVulkan, vulkanDevice, vkPhysicalDevice, vkCommandPool, vkGraphicsQueue);
 
+    if (!useVulkan)
+    {
+        fboTextureIndex = pics.getTextureCount();
+        pics.attachTexture(fboTexture, fboTextureIndex, ScreenWidth, ScreenHeight, ScreenWidth, ScreenHeight, 0);
+    }
 
     Smenu menu;
     strcpy(menu.opt[0], "Single Player");
@@ -4202,8 +4255,14 @@ void Game::destroy()
     mapai.Destroy();
     pics.destroy(vulkanDevice);
 
+    if (!vulkanDevice)
+    {
+        glDeleteFramebuffers(1, &fbo);
+    }
+
     bulbox.destroy();
 
+    coolShader.destroy(vulkanDevice);
     defaultShader.destroy(vulkanDevice);
     colorShader.destroy(vulkanDevice);
 }

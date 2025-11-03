@@ -194,7 +194,7 @@ public:
                    VkDevice* vkDevice = nullptr);
 
     GLuint        getGLName(unsigned long index);
-    unsigned      getTextureCount(){return vkTextures.size();}
+    unsigned      getTextureCount(){return isVulkan ? vkTextures.size() : glTextures.size();}
     PicData*      getInfo(unsigned long index);
     unsigned long count(){return picInfo.size();}
     int           findByName(const char* picname, bool debug = false);

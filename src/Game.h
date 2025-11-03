@@ -66,6 +66,7 @@ class Game
     float   OrthoMatrix[16];
     float   ViewMatrix[16];
 
+    ShaderProgram        coolShader;
     ShaderProgram        defaultShader;
     ShaderProgram        colorShader;
 
@@ -131,6 +132,11 @@ class Game
     int  clientMyIndex;
     int door_tim;
     int objectivetim;
+
+    GLuint fbo;
+    GLuint fboTexture;
+    int fboTextureIndex;
+
     bool Client_GotMapData;
     bool showMiniMap;
     bool doFadein;
