@@ -21,6 +21,7 @@
 #include "network/Client.h"
 #include "BulletContainer.h"
 #include "NetworkCommands.h"
+#include "RenderTexture.h"
 #include "Inventory.h"
 #include "Collection.h"
 #include "GameData.h"
@@ -133,8 +134,7 @@ class Game
     int door_tim;
     int objectivetim;
 
-    GLuint fbo;
-    GLuint fboTexture;
+    RenderTexture screenTexture;
     int fboTextureIndex;
 
     bool Client_GotMapData;
@@ -171,6 +171,7 @@ public:
     VkCommandBuffer  * vkCmd;
     VkCommandPool    * vkCommandPool;
     VkQueue          * vkGraphicsQueue;
+    size_t             vkSwapChainImageCount;
 
     float MouseX;
     float MouseY;

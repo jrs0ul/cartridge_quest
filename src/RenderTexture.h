@@ -22,7 +22,13 @@ class RenderTexture
 {
 public:
 
-    void create(uint32_t width, uint32_t height, uint8_t filter, bool isVulkan = false);
+    void create(uint32_t width,
+                uint32_t height,
+                uint8_t filter,
+                bool isVulkan = false,
+                VkDevice* device = nullptr,
+                VkPhysicalDevice* physical = nullptr,
+                size_t vkSwapChainImageCount = 0);
 
     void bind();
     void unbind();
@@ -32,6 +38,14 @@ public:
     void destroy();
 
 private:
+
+    std::vector<VkFramebuffer>   vkSwapChainFramebuffers;
+    std::vector<VkFence>         vkFences;
+    VkRenderPass                 vkRenderPass;
+    VkImage                      vkImage;
+    VkDeviceMemory               vkTextureMemory;
+    VkSemaphore                  vkImageAvailableSemaphore;
+    VkSemaphore                  vkRenderingFinishedSemaphore;
 
     uint32_t _width;
     uint32_t _height;

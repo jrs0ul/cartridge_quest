@@ -141,7 +141,7 @@ void SDLVideo::createImage(VkDevice& device,
     vkBindImageMemory(device, image, imageMemory, 0);
 }
 
-VkImageView SDLVideo::createImageView(VkImage& image, VkFormat format, VkImageAspectFlags aspectFlags)
+VkImageView SDLVideo::createImageView(VkDevice& vkDevice, VkImage& image, VkFormat format, VkImageAspectFlags aspectFlags)
 {
     VkImageViewCreateInfo viewInfo = {};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -498,7 +498,7 @@ bool SDLVideo::initWindow(const char * title,
 
         for (uint32_t i = 0; i < vkSwapchainImages.size(); i++)
         {
-            vkSwapchainImageViews[i] = createImageView(vkSwapchainImages[i], vkSurfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT);
+            vkSwapchainImageViews[i] = createImageView(vkDevice, vkSwapchainImages[i], vkSurfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT);
         }
 
         getSupportedDepthFormat(vkPhysicalDevice, &vkDepthFormat);
@@ -514,7 +514,7 @@ bool SDLVideo::initWindow(const char * title,
                     depthImage,
                     depthImageMemory);
 
-        VkImageView depthImageView = createImageView(depthImage, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_ASPECT_DEPTH_BIT);
+        VkImageView depthImageView = createImageView(vkDevice, depthImage, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_ASPECT_DEPTH_BIT);
 
 
         //render pass

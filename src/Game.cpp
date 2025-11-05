@@ -2717,12 +2717,7 @@ void Game::DrawMissionObjectives()
 
 void Game::render(bool useVulkan)
 {
-    if (!useVulkan)
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glViewport(0, 0, ScreenWidth, ScreenHeight);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    }
+    screenTexture.bind();
 
     FlatMatrix identity;
     MatrixIdentity(identity.m);
@@ -2788,7 +2783,13 @@ void Game::render(bool useVulkan)
     {
         glFlush();
         glDisable(GL_BLEND);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    screenTexture.unbind();
+
+    if (!useVulkan)
+    {
+        glViewport(0, 0, ScreenWidth, ScreenHeight);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         pics.draw(fboTextureIndex, 0, 0, 0, false, sys.screenScaleX, sys.screenScaleY);
         pics.drawBatch(&colorShader, &coolShader, 666, false);
@@ -4156,23 +4157,18 @@ void Game::init(bool useVulkan)
 
         glEnable (GL_BLEND);
         glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+    else  //  Vulkan
+    {
+    }
 
-
-        //-----create fbo
-        glGenFramebuffers(1, &fbo);
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-        glGenTextures(1, &fboTexture);
-        glBindTexture(GL_TEXTURE_2D, fboTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ScreenWidth, ScreenHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fboTexture, 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-   }
-   else  //  Vulkan
-   {
-   }
+    screenTexture.create(ScreenWidth,
+                         ScreenHeight,
+                         0,
+                         useVulkan,
+                         vulkanDevice,
+                         vkPhysicalDevice,
+                         vkSwapChainImageCount);
 
 
     MatrixOrtho(0.0, ScreenWidth, ScreenHeight, 0.0, -400, 400, OrthoMatrix);
@@ -4182,7 +4178,13 @@ void Game::init(bool useVulkan)
     if (!useVulkan)
     {
         fboTextureIndex = pics.getTextureCount();
-        pics.attachTexture(fboTexture, fboTextureIndex, ScreenWidth, ScreenHeight, ScreenWidth, ScreenHeight, 0);
+        pics.attachTexture(screenTexture.getGLTexture(),
+                           fboTextureIndex,
+                           ScreenWidth,
+                           ScreenHeight,
+                           ScreenWidth,
+                           ScreenHeight,
+                           0);
     }
 
     Smenu menu;
@@ -4255,10 +4257,7 @@ void Game::destroy()
     mapai.Destroy();
     pics.destroy(vulkanDevice);
 
-    if (!vulkanDevice)
-    {
-        glDeleteFramebuffers(1, &fbo);
-    }
+    screenTexture.destroy();
 
     bulbox.destroy();
 

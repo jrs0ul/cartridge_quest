@@ -304,6 +304,7 @@ int main(int argc, char* argv[])
     game.vkRenderPass     = SDL.getVkRenderPass();
     game.vkCommandPool    = SDL.getVkCommandPool();
     game.vkGraphicsQueue  = SDL.getVkGraphicsQueue();
+    game.vkSwapChainImageCount = SDL.getVkSwapChainImageCount();
 
     SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 

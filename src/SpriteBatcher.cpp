@@ -269,10 +269,14 @@ bool SpriteBatcher::load(const char* list, AAssetManager* assman,
             VkDeviceSize imageSize = newImg.width * newImg.height * (newImg.bits / 8);
             VkBuffer stagingBuffer;
             VkDeviceMemory stagingBufferMemory;
-            SDLVideo::createBuffer(*vkDevice, *physical, imageSize,
-                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                         stagingBuffer, stagingBufferMemory);
+            SDLVideo::createBuffer(*vkDevice,
+                                   *physical,
+                                   imageSize,
+                                   VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                   stagingBuffer,
+                                   stagingBufferMemory);
 
             void* data;
             vkMapMemory(*vkDevice, stagingBufferMemory, 0, imageSize, 0, &data);

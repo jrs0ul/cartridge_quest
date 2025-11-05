@@ -99,6 +99,7 @@ public:
     VkPhysicalDevice* getVKPhysicalDevice(){return &vkPhysicalDevice;}
     VkCommandPool*    getVkCommandPool(){return &vkCommandPool;}
     VkQueue*          getVkGraphicsQueue(){return &vkGraphicsQueue;}
+    uint32_t          getVkSwapChainImageCount(){return vkSwapchainImageCount;}
 
     static uint32_t findMemoryType(VkPhysicalDevice& physical, uint32_t typeFilter, VkMemoryPropertyFlags properties);
     static void createImage(VkDevice& device,
@@ -115,8 +116,12 @@ public:
                             VkMemoryPropertyFlags properties,
                             VkBuffer& buffer,
                             VkDeviceMemory& bufferMemory);
+
+    static VkImageView createImageView(VkDevice& device,
+                                       VkImage& image,
+                                       VkFormat format,
+                                       VkImageAspectFlags aspectFlags);
 private:
-    VkImageView createImageView(VkImage& image, VkFormat format, VkImageAspectFlags aspectFlags);
     void createSemaphore(VkSemaphore *semaphore);
 
 
