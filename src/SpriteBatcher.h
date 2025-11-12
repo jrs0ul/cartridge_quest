@@ -33,6 +33,7 @@
 #include "Image.h"
 #include "Colors.h"
 #include "ShaderProgram.h"
+#include "VulkanTexture.h"
 
 struct Sprite
 {
@@ -93,23 +94,12 @@ struct SpriteBatchItem{
 };
 //==================================
 
-//Vulkan texture
-struct Texture
-{
-    VkImage         vkImage;
-    VkImageView     vkImageView;
-    VkSampler       vkSampler;
-    VkDeviceMemory  vkTextureMemory;
-};
-
-//--------------------
-
 class SpriteBatcher
 {
 
     static const int VULKAN_BUFFER_COUNT = 3;
 
-    std::vector<Texture>         vkTextures; // for vulkan
+    std::vector<VulkanTexture>   vkTextures; // for vulkan
     std::vector<GLuint>          glTextures; // for opengl
     std::vector<PicData>         picInfo;
     std::vector<SpriteBatchItem> batch;
@@ -219,6 +209,11 @@ public:
     void attachTexture(GLuint textureID, unsigned long index,
                        int width, int height,
                        int twidth, int theight, int filter = 0);
+
+    void attachTexture(VulkanTexture& tex, unsigned long index,
+                       int width, int height,
+                       int twidth, int theight,
+                       VkDevice* device, int filter = 0);
     void remove(unsigned long index);
 
 };

@@ -66,9 +66,21 @@ void ConfigureGraphicsLib(bool useVulkan)
 //-----------------
 void RenderScreen(bool useVulkan)
 {
-    SDL.beginRenderPass(useVulkan);
+    if (useVulkan)
+    {
+        SDL.VkAcquireNextImage();
+        SDL.VkResetCommandBuffer();
+        SDL.VkBeginCommandBuffer();
+    }
 
-    game.render(useVulkan);
+    game.renderToFBO(useVulkan);
+
+    if (useVulkan)
+    {
+        SDL.VkBeginRenderPass({0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 0});
+    }
+
+    game.renderFBO(useVulkan);
 
     SDL.swap(useVulkan);
 }

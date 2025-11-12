@@ -201,7 +201,8 @@ public:
     Game();
 
     void init(bool useVulkan);
-    void render(bool useVulkan);
+    void renderToFBO(bool useVulkan);
+    void renderFBO(bool useVulkan);
     void network();
     void logic();
     void destroy();
@@ -291,7 +292,7 @@ private:
     void HelpScreenLogic();
     void EndingLogic();
     int PlayerCount();
-    void LoadShader(ShaderProgram* shader, const char* name, bool useVulkan, bool useUVS);
+    void LoadShader(ShaderProgram* shader, const char* name, bool useVulkan, bool useUVS, bool needAlphaBlend);
     void IntroScreenLogic();
     void PlayNewSong(const char* songName);
 

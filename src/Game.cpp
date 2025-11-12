@@ -2715,9 +2715,9 @@ void Game::DrawMissionObjectives()
 
 //---------------------------
 
-void Game::render(bool useVulkan)
+void Game::renderToFBO(bool useVulkan)
 {
-    screenTexture.bind();
+    screenTexture.bind(vkCmd);
 
     FlatMatrix identity;
     MatrixIdentity(identity.m);
@@ -2785,8 +2785,11 @@ void Game::render(bool useVulkan)
         glDisable(GL_BLEND);
     }
 
-    screenTexture.unbind();
-
+    screenTexture.unbind(vkCmd);
+}
+//------------------------------------
+void Game::renderFBO(bool useVulkan)
+{
     if (!useVulkan)
     {
         glViewport(0, 0, ScreenWidth, ScreenHeight);
@@ -2794,6 +2797,12 @@ void Game::render(bool useVulkan)
         pics.draw(fboTextureIndex, 0, 0, 0, false, sys.screenScaleX, sys.screenScaleY);
         pics.drawBatch(&colorShader, &coolShader, 666, false);
         glEnable(GL_BLEND);
+    }
+    else
+    {
+        pics.draw(fboTextureIndex, 0, ScreenHeight, 0, false, sys.screenScaleX, -sys.screenScaleY);
+        pics.drawBatch(&colorShader, &coolShader, 666, true, vkCmd, vulkanDevice);
+
     }
 
 }
@@ -4045,7 +4054,7 @@ void Game::ParseMessagesClientGot()
 
 
 //---------------------------------------
-void Game::LoadShader(ShaderProgram* shader, const char* name, bool useVulkan, bool useUVS)
+void Game::LoadShader(ShaderProgram* shader, const char* name, bool useVulkan, bool useUVS, bool needAlphaBlend)
 {
     shader->create(useVulkan);
 
@@ -4107,7 +4116,7 @@ void Game::LoadShader(ShaderProgram* shader, const char* name, bool useVulkan, b
         frag.loadVK(FRAGMENT_SHADER, buf, vulkanDevice);
 
         shader->attach(frag);
-        shader->buildVkPipeline(vulkanDevice, vkRenderPass, sys, useUVS);
+        shader->buildVkPipeline(vulkanDevice, vkRenderPass, sys, useUVS, needAlphaBlend);
     }
 
 }
@@ -4144,9 +4153,9 @@ void Game::init(bool useVulkan)
    }
         printf("Creating shaders...\n");
 
-        LoadShader(&defaultShader, "default", useVulkan, true);
-        LoadShader(&colorShader, "justcolor", useVulkan, false);
-        LoadShader(&coolShader, "filmGrain", useVulkan, true);
+        LoadShader(&defaultShader, "default", useVulkan, true, true);
+        LoadShader(&colorShader, "justcolor", useVulkan, false, true);
+        LoadShader(&coolShader, "filmGrain", useVulkan, true, false);
 
 
     if (!useVulkan)
@@ -4175,9 +4184,10 @@ void Game::init(bool useVulkan)
 
     pics.load("pics/imagesToLoad.xml", useVulkan, vulkanDevice, vkPhysicalDevice, vkCommandPool, vkGraphicsQueue);
 
+    fboTextureIndex = pics.getTextureCount();
+
     if (!useVulkan)
     {
-        fboTextureIndex = pics.getTextureCount();
         pics.attachTexture(screenTexture.getGLTexture(),
                            fboTextureIndex,
                            ScreenWidth,
@@ -4185,6 +4195,19 @@ void Game::init(bool useVulkan)
                            ScreenWidth,
                            ScreenHeight,
                            0);
+    }
+    else
+    {
+        VulkanTexture t;
+        screenTexture.getVulkanTexture(t);
+        pics.attachTexture(t,
+                           fboTextureIndex,
+                           ScreenWidth,
+                           ScreenHeight,
+                           ScreenWidth,
+                           ScreenHeight,
+                           vulkanDevice);
+
     }
 
     Smenu menu;

@@ -46,10 +46,10 @@ void RenderTexture::create(uint32_t width,
                               vkImage,
                               vkTextureMemory);
 
-        VkImageView vkImageView = SDLVideo::createImageView(*device,
-                                                            vkImage,
-                                                            VK_FORMAT_R8G8B8A8_SRGB,
-                                                            VK_IMAGE_ASPECT_COLOR_BIT);
+        vkImageView = SDLVideo::createImageView(*device,
+                                                vkImage,
+                                                VK_FORMAT_R8G8B8A8_SRGB,
+                                                VK_IMAGE_ASPECT_COLOR_BIT);
 
 
         VkAttachmentDescription colorAttachment{};
@@ -111,28 +111,11 @@ void RenderTexture::create(uint32_t width,
 
             vkCreateFramebuffer(*device, &framebufferInfo, nullptr, &vkSwapChainFramebuffers[i]);
         }
-        //----
-        vkFences.resize(vkSwapChainImageCount);
-        VkSemaphoreCreateInfo semaphoreInfo{};
-        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-        VkFenceCreateInfo fenceInfo{};
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-        vkCreateSemaphore(*device, &semaphoreInfo, nullptr, &vkImageAvailableSemaphore);
-        vkCreateSemaphore(*device, &semaphoreInfo, nullptr, &vkRenderingFinishedSemaphore);
-
-        for (size_t i = 0; i < vkSwapChainImageCount; i++)
-        {
-            vkCreateFence(*device, &fenceInfo, nullptr, &vkFences[i]);
-        }
-
 
     }
 }
 
-void RenderTexture::bind()
+void RenderTexture::bind(VkCommandBuffer* vkCmd)
 {
     if (!useVulkan)
     {
@@ -142,32 +125,14 @@ void RenderTexture::bind()
     }
     else //VULKAN
     {
-        /*vkAcquireNextImageKHR(*device,
-                          vkSwapchain,
-                          UINT64_MAX,
-                          vkImageAvailableSemaphore,
-                          VK_NULL_HANDLE,
-                          &vkFrameIndex);
-
-        vkWaitForFences(vkDevice, 1, &vkFences[vkFrameIndex], VK_FALSE, UINT64_MAX);
-        vkResetFences(vkDevice, 1, &vkFences[vkFrameIndex]);
-
-        vkCommandBuffer = vkCommandBuffers[vkFrameIndex];
-        vkImage = vkSwapchainImages[vkFrameIndex];
-
-        vkResetCommandBuffer(vkCommandBuffer, 0);
-
-        VkCommandBufferBeginInfo beginInfo = {};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-        vkBeginCommandBuffer(vkCommandBuffer, &beginInfo);
 
         VkRenderPassBeginInfo render_pass_info = {};
         render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         render_pass_info.renderPass        = vkRenderPass;
-        render_pass_info.framebuffer       = vkSwapchainFramebuffers[vkFrameIndex];
+        render_pass_info.framebuffer       = vkSwapChainFramebuffers[0];
         render_pass_info.renderArea.offset = {0, 0};
-        render_pass_info.renderArea.extent = vkSwapchainSize;
+        render_pass_info.renderArea.extent.width = _width;
+        render_pass_info.renderArea.extent.height = _height;
 
         std::vector<VkClearValue> clearValues(1);
         clearValues[0].color = {0,0,0,0};
@@ -175,12 +140,12 @@ void RenderTexture::bind()
         render_pass_info.clearValueCount = static_cast<uint32_t>(clearValues.size());
         render_pass_info.pClearValues = clearValues.data();
 
-        vkCmdBeginRenderPass(vkCommandBuffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);*/
+        vkCmdBeginRenderPass(*vkCmd, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
     }
 
 }
 
-void RenderTexture::unbind()
+void RenderTexture::unbind(VkCommandBuffer* vkCmd)
 {
     if (!useVulkan)
     {
@@ -188,19 +153,16 @@ void RenderTexture::unbind()
     }
     else //VULKAN
     {
-       /* vkCmdEndRenderPass(*vkCommandBuffer);
-        vkEndCommandBuffer(*vkCommandBuffer);
-
-        VkSubmitInfo submitInfo = {};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = vkCommandBuffer;
-        vkQueueSubmit(vkGraphicsQueue, 1, &submitInfo, vkFences[vkFrameIndex]);
-
-        vkDeviceWaitIdle(*device);*/
-
-
+        vkCmdEndRenderPass(*vkCmd);
     }
+}
+
+
+void RenderTexture::getVulkanTexture(VulkanTexture& tex)
+{
+    tex.vkImage = vkImage;
+    tex.vkImageView = vkImageView;
+    tex.vkTextureMemory = vkTextureMemory;
 }
 
 

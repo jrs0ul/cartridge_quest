@@ -284,7 +284,7 @@ bool SpriteBatcher::load(const char* list, AAssetManager* assman,
             vkUnmapMemory(*vkDevice, stagingBufferMemory);
 
 
-            Texture t;
+            VulkanTexture t;
 
             SDLVideo::createImage(*vkDevice,
                                   *physical,
@@ -1193,6 +1193,54 @@ void SpriteBatcher::attachTexture(GLuint textureID, unsigned long index,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtras );
     glBindTexture(GL_TEXTURE_2D, 0);
 
+}
+
+//---------------------------
+void SpriteBatcher::attachTexture(VulkanTexture& tex, unsigned long index,
+                                  int width, int height,
+                                  int twidth, int theight,
+                                  VkDevice* device, int filter)
+{
+
+    PicData newData;
+
+    newData.twidth  = twidth;
+    newData.theight = theight;
+    newData.filter  = filter;
+    newData.width   = width;
+    newData.height  = height;
+
+    newData.htilew = newData.twidth / 2.0f;
+    newData.htileh = newData.theight / 2.0f;
+    newData.vframes = newData.height / newData.theight;
+    newData.hframes = newData.width / newData.twidth;
+
+    picInfo.push_back(newData);
+
+
+    VkSamplerCreateInfo samplerInfo{};
+    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+
+    VkFilter vkfilter = VK_FILTER_NEAREST;
+
+    if (picInfo[index].filter)
+    {
+        vkfilter = VK_FILTER_LINEAR;
+    }
+
+    samplerInfo.magFilter = vkfilter;
+    samplerInfo.minFilter = vkfilter;
+    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+
+    if (vkCreateSampler(*device, &samplerInfo, nullptr, &tex.vkSampler) != VK_SUCCESS) 
+    {
+        throw std::runtime_error("failed to create texture sampler!");
+    }
+
+
+    vkTextures.push_back(tex);
 }
 
 

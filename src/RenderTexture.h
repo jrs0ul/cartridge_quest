@@ -17,6 +17,7 @@
   #include <vulkan/vulkan.hpp>
 #endif
 
+#include "VulkanTexture.h"
 
 class RenderTexture
 {
@@ -30,22 +31,22 @@ public:
                 VkPhysicalDevice* physical = nullptr,
                 size_t vkSwapChainImageCount = 0);
 
-    void bind();
-    void unbind();
+    void bind(VkCommandBuffer* vkCmd = 0);
+    void unbind(VkCommandBuffer* vkCmd = 0);
 
     GLuint getGLTexture(){return fboTexture;}
+
+    void getVulkanTexture(VulkanTexture& tex);
 
     void destroy();
 
 private:
 
     std::vector<VkFramebuffer>   vkSwapChainFramebuffers;
-    std::vector<VkFence>         vkFences;
     VkRenderPass                 vkRenderPass;
     VkImage                      vkImage;
+    VkImageView                  vkImageView;
     VkDeviceMemory               vkTextureMemory;
-    VkSemaphore                  vkImageAvailableSemaphore;
-    VkSemaphore                  vkRenderingFinishedSemaphore;
 
     uint32_t _width;
     uint32_t _height;

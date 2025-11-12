@@ -33,7 +33,8 @@ public:
     void buildVkPipeline(VkDevice* device,
                          VkRenderPass* pass,
                          SystemConfig& config,
-                         bool needUvs);
+                         bool needUvs,
+                         bool needAlphaBlend);
 
     void use(VkCommandBuffer* vkCmd = nullptr);
 
