@@ -87,5 +87,6 @@ const unsigned char TILE_EXIT             = 81;
 
 
 const unsigned PICTURE_FONT               = 10;
+const unsigned PICTURE_FONT_SMALL         = 20;
 
 const int MAP_COUNT                       = 8;

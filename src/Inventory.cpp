@@ -42,10 +42,10 @@ void Inventory::draw(SpriteBatcher& pics, DArray<int>& loot, GameData& gd)
         GameDescription* game = gd.getGame(loot[state] - ITEM_GAME_NINJA_MAN);
         pics.draw(11, 240, 100, loot[state] - ITEM_GAME_NINJA_MAN, false, 2, 2);
         WriteShadedText(350, 100, pics, PICTURE_FONT, game->name, 0.8f, 0.8f);
-        WriteShadedText(310, 150, pics, PICTURE_FONT, game->description, 0.5f, 0.5f);
-        WriteShadedText(310, 170, pics, PICTURE_FONT, game->description1, 0.5f, 0.5f);
-        WriteShadedText(310, 220, pics, PICTURE_FONT, game->effect, 0.5f, 0.5f);
-        WriteShadedText(310, 240, pics, PICTURE_FONT, game->effect1, 0.5f, 0.5f);
+        WriteSmallText(310, 150, pics, PICTURE_FONT_SMALL, game->description, 1, 1, COLOR(0,0,0,1), COLOR(0,0,0,1));
+        WriteSmallText(310, 170, pics, PICTURE_FONT_SMALL, game->description1, 1, 1, COLOR(0,0,0,1), COLOR(0,0,0,1));
+        WriteSmallText(310, 220, pics, PICTURE_FONT_SMALL, game->effect, 1, 1, COLOR(0,0,0,1), COLOR(0,0,0,1));
+        WriteSmallText(310, 240, pics, PICTURE_FONT_SMALL, game->effect1, 1, 1, COLOR(0,0,0,1), COLOR(0,0,0,1));
     }
 
 }

@@ -10,7 +10,7 @@
 <Img src="pics/Items.tga" width="32" height="32" filter="0" />
 <Img src="pics/digits.tga" width="16" height="32" filter="0" />
 <Img src="pics/Icons.tga" width="32" height="32" filter="0" />
-<Img src="pics/charai.tga" width="16" height="16" filter="0" />
+<Img src="pics/charai.tga" width="16" height="16" filter="1" />
 <Img src="pics/nitems.tga" width="32" height="32" filter="0" />
 <Img src="pics/mini.tga" width="4" height="4" filter="0" />
 <Img src="pics/intro.tga" width="640" height="360" filter="0" />
@@ -20,4 +20,5 @@
 <Img src="pics/pointer.tga" width="16" height="16" filter="0" />
 <Img src="pics/cross.tga" width="16" height="16" filter="0" />
 <Img src="pics/gameover.tga" width="256" height="64" filter="0" />
+<Img src="pics/charai8x8.tga" width="8" height="8" filter="1" />
 <Images>

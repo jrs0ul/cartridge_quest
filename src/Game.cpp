@@ -2298,7 +2298,7 @@ void Game::CoreGameLogic()
             inventory.reset();
         }
 
-        if (inventory.isSelected())
+        if (inventory.isSelected() && loot.count())
         {
             inventory.deactivate();
             inventory.reset();

@@ -16,6 +16,22 @@ void WriteText(unsigned int x, unsigned int y,
     }
 }
 //-----------------------------------------------------
+void WriteSmallText(unsigned int x, unsigned int y,
+                    SpriteBatcher& pics, int font,
+                    const char* s,
+                    float scalex, float scaley,
+                    COLOR c1, COLOR c2)
+{
+
+    for (unsigned int i = 0; i < strlen(s); i++)
+    {
+        pics.draw(font, x + (6 * scalex)*i, y, ((unsigned char)s[i])-32,
+                  false, scalex, scaley, 0.0f, c1, c2);
+    }
+}
+
+
+//-----------------------------------------------------
 void WriteShadedText(unsigned int x, unsigned int y,
                      SpriteBatcher& pics,
                      int font, const char* s,
@@ -28,6 +44,20 @@ void WriteShadedText(unsigned int x, unsigned int y,
     WriteText(x, y, pics, font, s, scalex, scaley, c1, c2);
 
 }
+//-----------------------------------------------
+void WriteSmallShadedText(unsigned int x, unsigned int y,
+                     SpriteBatcher& pics,
+                     int font, const char* s,
+                     float scalex, float scaley,
+                     COLOR c1,
+                     COLOR c2,
+                     COLOR shade)
+{
+    WriteSmallText(x - 1, y - 1, pics, font, s, scalex, scaley, shade, shade);
+    WriteSmallText(x, y, pics, font, s, scalex, scaley, c1, c2);
+
+}
+
 //------------------------------------------------
 void DrawNumber(int x, int y, int number, SpriteBatcher& pics, unsigned index)
 {
