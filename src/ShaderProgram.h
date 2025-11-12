@@ -11,14 +11,23 @@
 
 class ShaderProgram
 {
-    GLuint program;
-    bool isVulkanShader;
-//vulkan stuff
+   //vulkan stuff
+
+
     std::vector<VkPipelineShaderStageCreateInfo> vkShaderStages;
     VkPipeline                                   vkPipeline;
     VkDescriptorSetLayout                        vkDescriptorSetLayout;
     VkDescriptorPool                             vkDescriptorPool;
+    //opengl
+    GLuint program;
+    bool isVulkanShader;
+
 public:
+    static const int VULKAN_BUFFER_COUNT = 3;
+    VkBuffer                     vkVertexBuffers[VULKAN_BUFFER_COUNT];
+    VkDeviceMemory               vkVertexBuffersMemory[VULKAN_BUFFER_COUNT];
+    VkDeviceSize                 vkBufferOffset[VULKAN_BUFFER_COUNT];
+
     VkPipelineLayout vkPipelineLayout;
 
     VkDescriptorSet  vkDS;
@@ -31,6 +40,7 @@ public:
     void link();
     //for Vulkan only
     void buildVkPipeline(VkDevice* device,
+                         VkPhysicalDevice* physical,
                          VkRenderPass* pass,
                          SystemConfig& config,
                          bool needUvs,

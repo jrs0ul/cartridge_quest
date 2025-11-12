@@ -97,21 +97,12 @@ struct SpriteBatchItem{
 class SpriteBatcher
 {
 
-    static const int VULKAN_BUFFER_COUNT = 3;
 
     std::vector<VulkanTexture>   vkTextures; // for vulkan
     std::vector<GLuint>          glTextures; // for opengl
     std::vector<PicData>         picInfo;
     std::vector<SpriteBatchItem> batch;
 
-
-    VkBuffer                     vkVertexBuffers[VULKAN_BUFFER_COUNT];
-    VkDeviceMemory               vkVertexBuffersMemory[VULKAN_BUFFER_COUNT];
-    void*                        vkVertexBufferMappings[VULKAN_BUFFER_COUNT];
-
-    VkDeviceSize                 vkVertexBufferOffset;
-    VkDeviceSize                 vkUVsBufferOffset;
-    VkDeviceSize                 vkColorBufferOffset;
 
     bool isVulkan;
 public:
@@ -132,11 +123,11 @@ public:
     SpriteBatcher(){ isVulkan = false; }
 #ifndef __ANDROID__
     bool initContainer(const char* list,
-                       bool useVulkan = false, VkDevice* device = nullptr, VkPhysicalDevice* physical = nullptr);
+                       bool useVulkan = false);
 #else
     bool initContainer(const char* list,
                        AAssetManager* assman,
-                       bool useVulkan = false, VkDevice* device = nullptr, VkPhysicalDevice* physical = nullptr);
+                       bool useVulkan = false);
 #endif
 
     //load textures from the xml file list

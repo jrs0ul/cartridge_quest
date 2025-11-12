@@ -2761,9 +2761,13 @@ void Game::renderToFBO(bool useVulkan)
     }
     else //VULKAN
     {
+        float buffer[17];
+        float time = TimeTicks / 1000.f;
+        memcpy(buffer, finalM.m, sizeof(float) * 16);
+        memcpy(&buffer[16], &time, sizeof(float));
         vkCmdPushConstants(*vkCmd,
                 *coolShader.getVkPipelineLayout(),
-                VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(finalM.m), &finalM.m);
+                VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(float) * 17, &buffer);
 
     }
 
@@ -4116,7 +4120,7 @@ void Game::LoadShader(ShaderProgram* shader, const char* name, bool useVulkan, b
         frag.loadVK(FRAGMENT_SHADER, buf, vulkanDevice);
 
         shader->attach(frag);
-        shader->buildVkPipeline(vulkanDevice, vkRenderPass, sys, useUVS, needAlphaBlend);
+        shader->buildVkPipeline(vulkanDevice, vkPhysicalDevice, vkRenderPass, sys, useUVS, needAlphaBlend);
     }
 
 }

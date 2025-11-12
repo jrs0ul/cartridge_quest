@@ -197,9 +197,9 @@ bool SpriteBatcher::load(const char* list, AAssetManager* assman,
 {
 
 #ifndef __ANDROID__
-    if (!initContainer(list, useVulkan, vkDevice, physical))
+    if (!initContainer(list, useVulkan))
 #else
-    if (!initContainer(list, assman, useVulkan, vkDevice, physical))
+    if (!initContainer(list, assman, useVulkan))
 #endif
     {
         return false;
@@ -487,45 +487,45 @@ void SpriteBatcher::drawVA(void * vertices,
     {
         void* vertData;
         vkMapMemory(*vkDevice,
-                    vkVertexBuffersMemory[0],
-                    vkVertexBufferOffset,
+                    shader->vkVertexBuffersMemory[0],
+                    shader->vkBufferOffset[0],
                     vertexCount * sizeof(float),
                     0,
                     &vertData);
         memcpy(vertData, vertices, vertexCount * sizeof(float));
-        vkUnmapMemory(*vkDevice, vkVertexBuffersMemory[0]);
+        vkUnmapMemory(*vkDevice, shader->vkVertexBuffersMemory[0]);
 
         if (uvsCount)
         {
             void* uvsData;
             vkMapMemory(*vkDevice,
-                        vkVertexBuffersMemory[1],
-                        vkUVsBufferOffset,
+                        shader->vkVertexBuffersMemory[1],
+                        shader->vkBufferOffset[1],
                         sizeof(float) * vertexCount,
                         0,
                         &uvsData);
             memcpy(uvsData, uvs, sizeof(float) * vertexCount);
-            vkUnmapMemory(*vkDevice, vkVertexBuffersMemory[1]);
+            vkUnmapMemory(*vkDevice, shader->vkVertexBuffersMemory[1]);
         }
 
         void* colorData;
         vkMapMemory(*vkDevice,
-                    vkVertexBuffersMemory[2],
-                    vkColorBufferOffset,
+                    shader->vkVertexBuffersMemory[2],
+                    shader->vkBufferOffset[2],
                     sizeof(float) * vertexCount * 2,
                     0,
                     &colorData);
         memcpy(colorData, colors, sizeof(float) * vertexCount * 2);
-        vkUnmapMemory(*vkDevice, vkVertexBuffersMemory[2]);
+        vkUnmapMemory(*vkDevice, shader->vkVertexBuffersMemory[2]);
 
-        vkCmdBindVertexBuffers(*vkCmd, 0, 1, &vkVertexBuffers[0], &vkVertexBufferOffset);
+        vkCmdBindVertexBuffers(*vkCmd, 0, 1, &shader->vkVertexBuffers[0], &shader->vkBufferOffset[0]);
 
         if (uvsCount)
         {
-            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &vkVertexBuffers[1], &vkUVsBufferOffset);
+            vkCmdBindVertexBuffers(*vkCmd, 1, 1, &shader->vkVertexBuffers[1], &shader->vkBufferOffset[1]);
         }
 
-        vkCmdBindVertexBuffers(*vkCmd, 2, 1, &vkVertexBuffers[2], &vkColorBufferOffset);
+        vkCmdBindVertexBuffers(*vkCmd, 2, 1, &shader->vkVertexBuffers[2], &shader->vkBufferOffset[2]);
 
         vkCmdBindDescriptorSets(*vkCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->vkPipelineLayout, 0, 1, &shader->vkDS, 0, nullptr);
 
@@ -533,11 +533,11 @@ void SpriteBatcher::drawVA(void * vertices,
 
         if (uvsCount)
         {
-            vkUVsBufferOffset += vertexCount * sizeof(float);
+            shader->vkBufferOffset[1] += vertexCount * sizeof(float);
         }
 
-        vkColorBufferOffset += (vertexCount * sizeof(float)*2);
-        vkVertexBufferOffset += vertexCount * sizeof(float);
+        shader->vkBufferOffset[2] += (vertexCount * sizeof(float)*2);
+        shader->vkBufferOffset[0] += vertexCount * sizeof(float);
 
     }
 }
@@ -569,9 +569,11 @@ void SpriteBatcher::drawBatch(ShaderProgram *  justColor,
                               VkDevice*        vkDevice)
 {
 
-        vkVertexBufferOffset = 0;
-        vkUVsBufferOffset = 0;
-        vkColorBufferOffset = 0;
+        for (int i = 0; i < ShaderProgram::VULKAN_BUFFER_COUNT; ++i)
+        {
+            justColor->vkBufferOffset[i] = 0;
+            uvColor->vkBufferOffset[i] = 0;
+        }
 
         switch(method){
               //TODO: complete VA
@@ -1273,11 +1275,11 @@ int SpriteBatcher::findByName(const char* picname, bool debug)
 //---------------------------------------
 #ifndef __ANDROID__
 bool SpriteBatcher::initContainer(const char* list,
-                                  bool useVulkan, VkDevice* device, VkPhysicalDevice* physical)
+                                  bool useVulkan)
 #else
 bool SpriteBatcher::initContainer(const char* list,
                                   AAssetManager* assman,
-                                  bool useVulkan, VkDevice* device, VkPhysicalDevice* physical)
+                                  bool useVulkan)
 #endif
 {
 
@@ -1448,38 +1450,7 @@ bool SpriteBatcher::initContainer(const char* list,
         }
         else // VULKAN
         {
-            const int MAX_VERTEX_BUFFER_SIZE = sizeof(float) * 4 * 10000;
-
-            for (int i = 0; i < 3; ++i)
-            {
-                VkBufferCreateInfo bufferInfo{};
-                bufferInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-                bufferInfo.size        = MAX_VERTEX_BUFFER_SIZE;
-                bufferInfo.usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-                bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-                if (vkCreateBuffer(*device, &bufferInfo, nullptr, &vkVertexBuffers[i]) != VK_SUCCESS) 
-                {
-                    throw std::runtime_error("failed to create vertex buffer!");
-                }
-
-                VkMemoryRequirements memRequirements;
-                vkGetBufferMemoryRequirements(*device, vkVertexBuffers[i], &memRequirements);
-
-                VkMemoryAllocateInfo allocInfo{};
-                allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-                allocInfo.allocationSize = memRequirements.size;
-                allocInfo.memoryTypeIndex = SDLVideo::findMemoryType(*physical, memRequirements.memoryTypeBits,
-                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-                if (vkAllocateMemory(*device, &allocInfo, nullptr, &vkVertexBuffersMemory[i]) != VK_SUCCESS)
-                {
-                    throw std::runtime_error("failed to allocate vertex buffer memory!");
-                }
-
-                vkBindBufferMemory(*device, vkVertexBuffers[i], vkVertexBuffersMemory[i], 0);
-            }
-        }
+                    }
 
     }
 
@@ -1494,7 +1465,6 @@ void SpriteBatcher::destroy(VkDevice* vkDevice)
 {
     if (!isVulkan)
     {
-        
 
         for (unsigned long i = 0; i < glTextures.size(); i++)
         {
@@ -1520,12 +1490,7 @@ void SpriteBatcher::destroy(VkDevice* vkDevice)
 
         vkTextures.clear();
 
-        for (int i = 0; i < 3; ++i)
-        {
-            vkFreeMemory(*vkDevice, vkVertexBuffersMemory[i], nullptr);
-            vkDestroyBuffer(*vkDevice, vkVertexBuffers[i], nullptr);
-        }
-
+       
     }
 
     batch.clear();

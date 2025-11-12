@@ -42,6 +42,13 @@ void ShaderProgram::destroy(VkDevice* vkDevice)
         {
             vkDestroyShaderModule(*vkDevice, vkShaderStages[i].module, nullptr);
         }
+
+        for (int i = 0; i < VULKAN_BUFFER_COUNT; ++i)
+        {
+            vkFreeMemory(*vkDevice, vkVertexBuffersMemory[i], nullptr);
+            vkDestroyBuffer(*vkDevice, vkVertexBuffers[i], nullptr);
+        }
+
     }
 }
 
@@ -97,11 +104,47 @@ void ShaderProgram::link()
 
 
 void ShaderProgram::buildVkPipeline(VkDevice* device,
+                                    VkPhysicalDevice* physical,
                                     VkRenderPass* pass,
                                     SystemConfig& config,
                                     bool needUvs,
                                     bool needAlphaBlend)
 {
+
+    const int MAX_VERTEX_BUFFER_SIZE = sizeof(float) * 4 * 10000;
+
+    for (int i = 0; i < VULKAN_BUFFER_COUNT; ++i)
+    {
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size        = MAX_VERTEX_BUFFER_SIZE;
+        bufferInfo.usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateBuffer(*device, &bufferInfo, nullptr, &vkVertexBuffers[i]) != VK_SUCCESS) 
+        {
+            throw std::runtime_error("failed to create vertex buffer!");
+        }
+
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(*device, vkVertexBuffers[i], &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = SDLVideo::findMemoryType(*physical, memRequirements.memoryTypeBits,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+        if (vkAllocateMemory(*device, &allocInfo, nullptr, &vkVertexBuffersMemory[i]) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to allocate vertex buffer memory!");
+        }
+
+        vkBindBufferMemory(*device, vkVertexBuffers[i], vkVertexBuffersMemory[i], 0);
+    }
+
+
+
 
     VkDescriptorSetLayoutBinding uvsLayoutBinding{};
     uvsLayoutBinding.binding = 0;
