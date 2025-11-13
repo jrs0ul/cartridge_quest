@@ -1,4 +1,4 @@
-# Codename: Warezdude
+# Codename: Cartridge Quest
 
 ![gameplay](wd.gif)
 
@@ -21,6 +21,10 @@
 Modern game console controllers are supported as well.
 
 Watch out for the blue monsters, they can eat items. To recover the item you have to kill the monster.
+
+The configuration file is stored either in .CartridgeQuest dir in your home directory or in c:\Users\UserName\.CartridgeQuest on Windows
+
+Renderer values: 0 - OpenGL, 1 - Vulkan
 
 ## Building from source
 

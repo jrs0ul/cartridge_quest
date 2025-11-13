@@ -293,7 +293,7 @@ int main(int argc, char* argv[])
 
     char buf[128];
     GetHomePath(buf);
-    sprintf(game.DocumentPath, "%s.warezdude3", buf);
+    sprintf(game.DocumentPath, "%s.CartridgeQuest", buf);
     MakeDir(game.DocumentPath);
     game.loadConfig();
 
@@ -301,7 +301,7 @@ int main(int argc, char* argv[])
     SDL.setMetrics(game.ScreenWidth, game.ScreenHeight);
 
 
-    const char* title = "WD40";
+    const char* title = "CARTRIDGE QUEST";
 
     const bool USE_VULKAN = (bool)game.renderer;
 

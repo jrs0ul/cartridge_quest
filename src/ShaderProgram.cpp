@@ -111,7 +111,7 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
                                     bool needAlphaBlend)
 {
 
-    const int MAX_VERTEX_BUFFER_SIZE = sizeof(float) * 4 * 10000;
+    const int MAX_VERTEX_BUFFER_SIZE = sizeof(float) * 4 * 100000;
 
     for (int i = 0; i < VULKAN_BUFFER_COUNT; ++i)
     {

@@ -22,7 +22,7 @@ else: #Mac OS X
         env.Append(LIBS = ['SDL2','GL', 'GLU', 'openal', 'vorbisfile', 'ogg', 'vulkan'])
 
 
-env.Program(target = "warezdude", 
+env.Program(target = "CartridgeQuest", 
             source = ["src/mainer.cpp",
                       "src/Dude.cpp",
                       "src/MapGenerator.cpp",
