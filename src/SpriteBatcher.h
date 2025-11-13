@@ -110,8 +110,7 @@ public:
                 unsigned uvsCount, unsigned vertexCount,
                 ShaderProgram* shader,
                 bool useVulkan,
-                VkCommandBuffer* vkCmd = nullptr,
-                VkDevice* vkDevice = nullptr);
+                VkCommandBuffer* vkCmd = nullptr);
 private:
     void resizeContainer(unsigned long index,
                          int twidth, int theight, int filter,

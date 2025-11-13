@@ -448,8 +448,7 @@ void SpriteBatcher::drawVA(void * vertices,
                            unsigned vertexCount,
                            ShaderProgram* shader,
                            bool useVulkan,
-                           VkCommandBuffer* vkCmd,
-                           VkDevice* vkDevice)
+                           VkCommandBuffer* vkCmd)
 {
     int attribID = 0;
     int ColorAttribID = 0;
@@ -655,7 +654,7 @@ void SpriteBatcher::drawBatch(ShaderProgram *  justColor,
                         }
 
                         drawVA(vertices.data(), uvs.data(), colors,
-                               uvs.size(), vertices.size(), currentShader, useVulkan, vkCmd, vkDevice);
+                               uvs.size(), vertices.size(), currentShader, useVulkan, vkCmd);
 
                         vertices.clear();
                         uvs.clear();
@@ -848,7 +847,7 @@ void SpriteBatcher::drawBatch(ShaderProgram *  justColor,
                 }
 
                 drawVA(vertices.data(), uvs.data(), colors,
-                       uvs.size(), vertices.size(), currentShader, useVulkan, vkCmd, vkDevice);
+                       uvs.size(), vertices.size(), currentShader, useVulkan, vkCmd);
 
 
                 vertices.clear();

@@ -811,6 +811,6 @@ void SDLVideo::VkQueuePresent()
     presentInfo.pImageIndices = &vkFrameIndex;
     vkQueuePresentKHR(vkPresentQueue, &presentInfo);
 
-    vkQueueWaitIdle(vkPresentQueue);
+    //vkQueueWaitIdle(vkPresentQueue);
 }
 
