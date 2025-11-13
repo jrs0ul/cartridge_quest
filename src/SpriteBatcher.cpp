@@ -485,38 +485,15 @@ void SpriteBatcher::drawVA(void * vertices,
     }
     else // VULKAN
     {
-        void* vertData;
-        vkMapMemory(*vkDevice,
-                    shader->vkVertexBuffersMemory[0],
-                    shader->vkBufferOffset[0],
-                    vertexCount * sizeof(float),
-                    0,
-                    &vertData);
-        memcpy(vertData, vertices, vertexCount * sizeof(float));
-        vkUnmapMemory(*vkDevice, shader->vkVertexBuffersMemory[0]);
+
+        memcpy(&((float*)(shader->vkMappedBuffer[0]))[shader->vkBufferOffset[0] / sizeof(float)], vertices, vertexCount * sizeof(float));
 
         if (uvsCount)
         {
-            void* uvsData;
-            vkMapMemory(*vkDevice,
-                        shader->vkVertexBuffersMemory[1],
-                        shader->vkBufferOffset[1],
-                        sizeof(float) * vertexCount,
-                        0,
-                        &uvsData);
-            memcpy(uvsData, uvs, sizeof(float) * vertexCount);
-            vkUnmapMemory(*vkDevice, shader->vkVertexBuffersMemory[1]);
+            memcpy(&((float*)(shader->vkMappedBuffer[1]))[shader->vkBufferOffset[1] / sizeof(float)], uvs, sizeof(float) * vertexCount);
         }
 
-        void* colorData;
-        vkMapMemory(*vkDevice,
-                    shader->vkVertexBuffersMemory[2],
-                    shader->vkBufferOffset[2],
-                    sizeof(float) * vertexCount * 2,
-                    0,
-                    &colorData);
-        memcpy(colorData, colors, sizeof(float) * vertexCount * 2);
-        vkUnmapMemory(*vkDevice, shader->vkVertexBuffersMemory[2]);
+        memcpy(&((float*)(shader->vkMappedBuffer[2]))[shader->vkBufferOffset[2] / sizeof(float)], colors, sizeof(float) * vertexCount * 2);
 
         vkCmdBindVertexBuffers(*vkCmd, 0, 1, &shader->vkVertexBuffers[0], &shader->vkBufferOffset[0]);
 

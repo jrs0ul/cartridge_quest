@@ -43,8 +43,10 @@ void ShaderProgram::destroy(VkDevice* vkDevice)
             vkDestroyShaderModule(*vkDevice, vkShaderStages[i].module, nullptr);
         }
 
+
         for (int i = 0; i < VULKAN_BUFFER_COUNT; ++i)
         {
+            vkUnmapMemory(*vkDevice, vkVertexBuffersMemory[i]);
             vkFreeMemory(*vkDevice, vkVertexBuffersMemory[i], nullptr);
             vkDestroyBuffer(*vkDevice, vkVertexBuffers[i], nullptr);
         }
@@ -141,8 +143,15 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
         }
 
         vkBindBufferMemory(*device, vkVertexBuffers[i], vkVertexBuffersMemory[i], 0);
-    }
 
+
+        vkMapMemory(*device,
+                    vkVertexBuffersMemory[i],
+                    0,
+                    VK_WHOLE_SIZE,
+                    0,
+                    &vkMappedBuffer[i]);
+    }
 
 
 

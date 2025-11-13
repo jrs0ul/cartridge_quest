@@ -27,6 +27,7 @@ public:
     VkBuffer                     vkVertexBuffers[VULKAN_BUFFER_COUNT];
     VkDeviceMemory               vkVertexBuffersMemory[VULKAN_BUFFER_COUNT];
     VkDeviceSize                 vkBufferOffset[VULKAN_BUFFER_COUNT];
+    void*                        vkMappedBuffer[VULKAN_BUFFER_COUNT];
 
     VkPipelineLayout vkPipelineLayout;
 
