@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29911.84
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "warezdude", "warezdude.vcxproj", "{BB496E1F-60E6-4C2F-A765-7347CE1D8054}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cartridge_quest", "cartridge_quest.vcxproj", "{BB496E1F-60E6-4C2F-A765-7347CE1D8054}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

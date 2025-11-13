@@ -21,8 +21,9 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{BB496E1F-60E6-4C2F-A765-7347CE1D8054}</ProjectGuid>
-    <RootNamespace>warezdude</RootNamespace>
+    <RootNamespace>cartridge_quest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>cartridge_quest</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -124,9 +125,10 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%VULKAN_SDK%\Lib32;D:\Programs\LIB\libvorbis-1.3.6\lib;D:\Programs\LIB\libogg-1.3.4\lib;D:\Programs\LIB\curl-7.69.1\builds\libcurl-vc-x86-release-static-ipv6-sspi-winssl\lib;D:\Programs\OpenAL 1.1 SDK\libs\Win32;D:\Programs\LIB\SDL2\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -192,7 +194,6 @@
     <ClCompile Include="src\Extensions.cpp" />
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\GameData.cpp" />
-    <ClCompile Include="src\gui\Button.cpp" />
     <ClCompile Include="src\gui\EditBox.cpp" />
     <ClCompile Include="src\gui\SelectMenu.cpp" />
     <ClCompile Include="src\gui\Slider.cpp" />
@@ -210,6 +211,7 @@
     <ClCompile Include="src\network\Socket.cpp" />
     <ClCompile Include="src\OSTools.cpp" />
     <ClCompile Include="src\Particles2D.cpp" />
+    <ClCompile Include="src\RenderTexture.cpp" />
     <ClCompile Include="src\SaveGame.cpp" />
     <ClCompile Include="src\SDLVideo.cpp" />
     <ClCompile Include="src\Shader.cpp" />

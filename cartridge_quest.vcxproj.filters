@@ -173,9 +173,6 @@
     <ClCompile Include="src\network\Socket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\gui\Button.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\gui\Text.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -216,6 +213,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\SpriteBatcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
