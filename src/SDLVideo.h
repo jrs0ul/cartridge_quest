@@ -101,26 +101,6 @@ public:
     VkQueue*          getVkGraphicsQueue(){return &vkGraphicsQueue;}
     uint32_t          getVkSwapChainImageCount(){return vkSwapchainImageCount;}
 
-    static uint32_t findMemoryType(VkPhysicalDevice& physical, uint32_t typeFilter, VkMemoryPropertyFlags properties);
-    static void createImage(VkDevice& device,
-                            VkPhysicalDevice& physical,
-                            uint32_t width, uint32_t height,
-                            VkFormat format, VkImageTiling tiling, 
-                            VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, 
-                            VkDeviceMemory& imageMemory);
-
-    static void createBuffer(VkDevice& device,
-                            VkPhysicalDevice& physical,
-                            VkDeviceSize size,
-                            VkBufferUsageFlags usage,
-                            VkMemoryPropertyFlags properties,
-                            VkBuffer& buffer,
-                            VkDeviceMemory& bufferMemory);
-
-    static VkImageView createImageView(VkDevice& device,
-                                       VkImage& image,
-                                       VkFormat format,
-                                       VkImageAspectFlags aspectFlags);
 private:
     void createSemaphore(VkSemaphore *semaphore);
 

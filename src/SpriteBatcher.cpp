@@ -16,7 +16,7 @@
 #include "Vectors.h"
 #include "OSTools.h"
 #include "Xml.h"
-#include "SDLVideo.h"
+#include "VulkanVideo.h"
 
 #ifdef __ANDROID__
 #include <android/log.h>
@@ -212,7 +212,7 @@ bool SpriteBatcher::load(const char* list, AAssetManager* assman,
         unsigned short imageBits = 0;
 
 #ifdef __ANDROID__
-        if (!newImg.loadTga(PicInfo[i].name, imageBits, assman))
+        if (!newImg.loadTga(picInfo[i].name, imageBits, assman))
         {
             LOGI("%s not found or corrupted by M$\n", picInfo[i].name);
         }
@@ -269,7 +269,7 @@ bool SpriteBatcher::load(const char* list, AAssetManager* assman,
             VkDeviceSize imageSize = newImg.width * newImg.height * (newImg.bits / 8);
             VkBuffer stagingBuffer;
             VkDeviceMemory stagingBufferMemory;
-            SDLVideo::createBuffer(*vkDevice,
+            VulkanVideo::createBuffer(*vkDevice,
                                    *physical,
                                    imageSize,
                                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -286,7 +286,7 @@ bool SpriteBatcher::load(const char* list, AAssetManager* assman,
 
             VulkanTexture t;
 
-            SDLVideo::createImage(*vkDevice,
+            VulkanVideo::createImage(*vkDevice,
                                   *physical,
                                   static_cast<uint32_t>(newImg.width),
                                   static_cast<uint32_t>(newImg.height),

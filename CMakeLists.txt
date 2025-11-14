@@ -42,6 +42,7 @@ add_executable(CartridgeQuest
                     src/SpriteBatcher.cpp
                     src/Image.cpp
                     src/RenderTexture.cpp
+                    src/VulkanVideo.cpp
                     src/SDLVideo.cpp
                     src/Extensions.cpp
                     src/ShaderProgram.cpp

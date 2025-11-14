@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.lot.kes.eastern_city">
+    package="com.lot.kes.CartridgeQuest">
 
 
     <application
@@ -11,7 +11,7 @@
 
         <activity android:name="android.app.NativeActivity"
             android:exported="true"
-            android:label="Eastern City"
+            android:label="Cartridge Quest"
                   android:configChanges="orientation|keyboardHidden|screenSize"
                   android:screenOrientation="landscape">
             <!-- Tell NativeActivity the name of or .so -->

@@ -99,14 +99,14 @@ void SoundSystem::stopMusic(){
 void SoundSystem::loadFiles(const char* BasePath, const char* list, AAssetManager * man){
 
 
-    buffers.add(loadSoundFile("sfx/reflect.wav", man));
+   /* buffers.add(loadSoundFile("sfx/reflect.wav", man));
     buffers.add(loadSoundFile("sfx/bang.wav", man));
     buffers.add(loadSoundFile("sfx/byeball.wav", man));
     buffers.add(loadSoundFile("sfx/gunfire.wav", man));
     buffers.add(loadSoundFile("sfx/prize.wav", man));
     buffers.add(loadSoundFile("sfx/reflect2.wav", man));
 
-    LOGI("Loaded %u buffers\n", buffers.count());
+    LOGI("Loaded %u buffers\n", buffers.count());*/
 
 }
 

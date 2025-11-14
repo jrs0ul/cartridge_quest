@@ -94,7 +94,9 @@ class Game
     Server serveris;
 
     SystemConfig sys;
+#ifndef __ANDROID__
     OggStream music;
+#endif
     CBulletContainer bulbox;
     SpriteBatcher pics;
 
@@ -147,6 +149,10 @@ public:
 
     static const int GameKeyCount = 20;
 
+#ifdef __ANDROID__
+    AAssetManager* AssetManager;
+#endif
+
     GameState state;
     MultiplayerModes netGameState;
 
@@ -194,6 +200,7 @@ public:
     float DeltaTime;
     float DT;
     float Accumulator;
+    long tick;
 
 public:
 
@@ -206,6 +213,7 @@ public:
     void logic();
     void destroy();
     void loadConfig();
+    void onBack(){};
 
 private:
     void DrawTitleScreen();

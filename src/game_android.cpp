@@ -109,7 +109,7 @@ static int engine_init_display(struct engine* engine) {
 
     if (!engine->loaded) {
         if (engine->game) {
-            engine->game->init();
+            engine->game->init(false);
             engine->game->TimeTicks = getTicks();
             engine->loaded = true;
         }
@@ -144,7 +144,8 @@ static void engine_draw_frame(struct engine* engine) {
             }
 
 
-            engine->game->render();
+            engine->game->renderToFBO(false);
+            engine->game->renderFBO(false);
             //glFlush();
             eglSwapBuffers(engine->display, engine->surface);
 

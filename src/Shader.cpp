@@ -123,11 +123,18 @@
     }
 
 
-
+#ifdef __ANDROID__
+bool Shader::loadVK(ShaderType shaderType, const char* path, VkDevice* device, AAssetManager* assman)
+#else
 bool Shader::loadVK(ShaderType shaderType, const char* path, VkDevice* device)
+#endif
 {
     char* binShader = 0;
+#ifdef __ANDROID__
+    long res = ReadFileData(path, &binShader, assman);
+#else
     long res = ReadFileData(path, &binShader);
+#endif
 
     if (res <= 0)
     {

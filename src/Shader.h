@@ -34,6 +34,7 @@ public:
         bool loadVK(ShaderType shaderType, const char* path, VkDevice* device);
 #else
         bool loadGL(ShaderType shaderType, const char* path, AAssetManager* man);
+        bool loadVK(ShaderType shaderType, const char* path, VkDevice* device, AAssetManager* man);
 #endif
 
         friend class ShaderProgram;

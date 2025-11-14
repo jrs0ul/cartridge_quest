@@ -227,8 +227,12 @@ void CMap::generate(int level)
 }
 
 //-------------------------------------
-bool CMap::load(const char* path, bool createItems, int otherplayers){
-
+#ifdef ANDROID
+bool CMap::load(const char* path, AAssetManager* assman, bool createItems, int otherplayers)
+#else
+bool CMap::load(const char* path, bool createItems, int otherplayers)
+#endif
+{
     char buf[255];
 
     puts(path);
@@ -240,8 +244,11 @@ bool CMap::load(const char* path, bool createItems, int otherplayers){
     enemyCount = 0;
 
     Xml mapfile;
-
+#ifdef ANDROID
+    bool res = mapfile.load(path, assman);
+#else
     bool res = mapfile.load(path);
+#endif
 
     if (res)
     {

@@ -1,6 +1,8 @@
 #include "RenderTexture.h"
-#include "Extensions.h"
-#include "SDLVideo.h"
+#ifndef __ANDROID__
+    #include "Extensions.h"
+#endif
+#include "VulkanVideo.h"
 
 
 void RenderTexture::create(uint32_t width,
@@ -33,7 +35,7 @@ void RenderTexture::create(uint32_t width,
     }
     else  // VULKAN
     {
-        SDLVideo::createImage(*device,
+        VulkanVideo::createImage(*device,
                               *physical,
                               _width,
                               _height,
@@ -46,7 +48,7 @@ void RenderTexture::create(uint32_t width,
                               vkImage,
                               vkTextureMemory);
 
-        vkImageView = SDLVideo::createImageView(*device,
+        vkImageView = VulkanVideo::createImageView(*device,
                                                 vkImage,
                                                 VK_FORMAT_R8G8B8A8_SRGB,
                                                 VK_IMAGE_ASPECT_COLOR_BIT);

@@ -4,7 +4,7 @@
 
 #include "ShaderProgram.h"
 #include <cstdio>
-#include "SDLVideo.h"
+#include "VulkanVideo.h"
 
 #ifdef __ANDROID__
 #include <android/log.h>
@@ -134,7 +134,7 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = SDLVideo::findMemoryType(*physical, memRequirements.memoryTypeBits,
+        allocInfo.memoryTypeIndex = VulkanVideo::findMemoryType(*physical, memRequirements.memoryTypeBits,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
         if (vkAllocateMemory(*device, &allocInfo, nullptr, &vkVertexBuffersMemory[i]) != VK_SUCCESS)

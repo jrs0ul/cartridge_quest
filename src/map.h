@@ -75,7 +75,12 @@ public:
         void move(Vector3D v, float size);
 
         void generate(int level);
+
+#ifdef ANDROID
+        bool load(const char* path, AAssetManager* assman, bool createItems=true, int otherplayers=0);
+#else
         bool load(const char* path, bool createItems=true, int otherplayers=0);
+#endif
         bool save(const char* path);
 
         void buildCollisionmap();

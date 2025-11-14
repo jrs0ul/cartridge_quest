@@ -11,9 +11,10 @@ set(SRCDIR ../src/)
 
 add_library(app-glue STATIC
             ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
-
+find_package(Vulkan REQUIRED)
 add_library(game SHARED
 
+             ${SRCDIR}VulkanVideo.cpp
              ${SRCDIR}game_android.cpp
              ${SRCDIR}Game.cpp
              ${SRCDIR}SpriteBatcher.cpp
@@ -58,7 +59,8 @@ find_library( # Sets the name of the path variable.
 
               # Specifies the name of the NDK library that
               # you want CMake to locate.
-              log )
+              log
+            )
 
 
 
@@ -76,7 +78,7 @@ target_link_libraries(
                        GLESv2
                        app-glue
                        OpenSLES
-                       OpenSLES_Vulkan
+                       Vulkan::Vulkan
 
 
                        # Links the target library to the log library
