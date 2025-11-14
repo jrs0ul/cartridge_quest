@@ -6,7 +6,7 @@ android {
     buildToolsVersion '35.0.0'
     defaultConfig {
         applicationId "com.lot.kes.CartridgeQuest"
-        minSdkVersion 15
+        minSdkVersion 22
         //noinspection OldTargetApi
         targetSdk 33
         versionCode 1

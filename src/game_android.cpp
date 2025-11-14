@@ -240,6 +240,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             if (engine->app->window != NULL) {
 
                 engine->game->AssetManager = app->activity->assetManager;
+                engine->game->loadConfig();
                 engine_init_display(engine);
                 engine_draw_frame(engine);
 

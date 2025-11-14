@@ -1,8 +1,7 @@
-# Sets the minimum version of CMake required to build the native
-# library. You should either keep the default value or only pass a
-# value of 3.4.0 or lower.
-
 cmake_minimum_required(VERSION 3.4.1)
+
+project(CartridgeQuest)
+
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
@@ -11,7 +10,9 @@ set(SRCDIR ../src/)
 
 add_library(app-glue STATIC
             ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
-find_package(Vulkan REQUIRED)
+
+#find_package(Vulkan REQUIRED)
+
 add_library(game SHARED
 
              ${SRCDIR}VulkanVideo.cpp
@@ -78,7 +79,7 @@ target_link_libraries(
                        GLESv2
                        app-glue
                        OpenSLES
-                       Vulkan::Vulkan
+                       #Vulkan::Vulkan
 
 
                        # Links the target library to the log library

@@ -53,13 +53,17 @@ PicData* SpriteBatcher::getInfo(unsigned long index)
 
 VkCommandBuffer beginSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool)
 {
+    VkCommandBuffer commandBuffer;
+#ifdef ANDROID
+    return commandBuffer;
+#endif
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandPool = commandPool;
     allocInfo.commandBufferCount = 1;
 
-    VkCommandBuffer commandBuffer;
+
     vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
 
     VkCommandBufferBeginInfo beginInfo{};
@@ -76,6 +80,9 @@ void endSingleTimeCommands(VkDevice& device,
                            VkQueue& graphicsQueue,
                            VkCommandBuffer commandBuffer)
 {
+#ifdef ANDROID
+    return;
+#endif
     vkEndCommandBuffer(commandBuffer);
 
     VkSubmitInfo submitInfo{};
@@ -92,6 +99,9 @@ void endSingleTimeCommands(VkDevice& device,
 void copyBufferToImage(VkDevice& device, VkCommandPool& commandPool, VkQueue& graphicsQueue,
                        VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) 
 {
+#ifdef ANDROID
+    return;
+#endif
     VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
 
     VkBufferImageCopy region{};
@@ -122,6 +132,9 @@ void transitionImageLayout(VkDevice& device,
                            VkImageLayout oldLayout,
                            VkImageLayout newLayout)
 {
+#ifdef ANDROID
+    return;
+#endif
     VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
 
     VkImageMemoryBarrier barrier{};
@@ -265,6 +278,7 @@ bool SpriteBatcher::load(const char* list, AAssetManager* assman,
         }
         else //VULKAN
         {
+#ifndef ANDROID
 
             VkDeviceSize imageSize = newImg.width * newImg.height * (newImg.bits / 8);
             VkBuffer stagingBuffer;
@@ -363,7 +377,7 @@ bool SpriteBatcher::load(const char* list, AAssetManager* assman,
 
 
             vkTextures.push_back(t);
-
+#endif
         }
 
         newImg.destroy();
@@ -378,6 +392,9 @@ void SpriteBatcher::bindTexture(unsigned long index,
                                 bool useVulkan,
                                 VkDevice* vkDevice)
 {
+#ifdef ANDROID
+    return;
+#endif
     if (useVulkan)
     {
         VkDescriptorImageInfo imageInfo{};
@@ -484,6 +501,7 @@ void SpriteBatcher::drawVA(void * vertices,
     }
     else // VULKAN
     {
+#ifndef ANDROID
 
         memcpy(&((float*)(shader->vkMappedBuffer[0]))[shader->vkBufferOffset[0] / sizeof(float)], vertices, vertexCount * sizeof(float));
 
@@ -514,7 +532,7 @@ void SpriteBatcher::drawVA(void * vertices,
 
         shader->vkBufferOffset[2] += (vertexCount * sizeof(float)*2);
         shader->vkBufferOffset[0] += vertexCount * sizeof(float);
-
+#endif
     }
 }
 //----------------------------------------------------------
@@ -1179,7 +1197,9 @@ void SpriteBatcher::attachTexture(VulkanTexture& tex, unsigned long index,
                                   int twidth, int theight,
                                   VkDevice* device, int filter)
 {
-
+#ifdef ANDROID
+    return;
+#endif
     PicData newData;
 
     newData.twidth  = twidth;
@@ -1454,6 +1474,7 @@ void SpriteBatcher::destroy(VkDevice* vkDevice)
     }
     else // Vulkan
     {
+#ifndef ANDROID
         printf("Deleting Vulkan textures...\n");
 
         for (unsigned long i = 0; i < vkTextures.size(); ++i)
@@ -1466,7 +1487,7 @@ void SpriteBatcher::destroy(VkDevice* vkDevice)
 
         vkTextures.clear();
 
-       
+#endif
     }
 
     batch.clear();

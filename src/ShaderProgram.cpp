@@ -31,6 +31,7 @@ void ShaderProgram::destroy(VkDevice* vkDevice)
     }
     else // VULKAN
     {
+#ifndef ANDROID
         printf("Deleting vulkan pipeline, shaders and buffers...\n");
 
         vkDestroyDescriptorPool(*vkDevice, vkDescriptorPool, nullptr);
@@ -50,7 +51,7 @@ void ShaderProgram::destroy(VkDevice* vkDevice)
             vkFreeMemory(*vkDevice, vkVertexBuffersMemory[i], nullptr);
             vkDestroyBuffer(*vkDevice, vkVertexBuffers[i], nullptr);
         }
-
+#endif
     }
 }
 
@@ -112,7 +113,9 @@ void ShaderProgram::buildVkPipeline(VkDevice* device,
                                     bool needUvs,
                                     bool needAlphaBlend)
 {
-
+#ifdef ANDROID
+    return;
+#endif
     const int MAX_VERTEX_BUFFER_SIZE = sizeof(float) * 4 * 100000;
 
     for (int i = 0; i < VULKAN_BUFFER_COUNT; ++i)
@@ -391,7 +394,9 @@ void ShaderProgram::use(VkCommandBuffer* vkCmd)
     }
     else // VULKAN
     {
+#ifndef ANDROID
         vkCmdBindPipeline(*vkCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
+#endif
     }
 }
 

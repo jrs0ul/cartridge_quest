@@ -2776,9 +2776,11 @@ void Game::renderToFBO(bool useVulkan)
     }
     else // VULKAN
     {
+#ifndef ANDROID
         vkCmdPushConstants(*vkCmd,
                            *defaultShader.getVkPipelineLayout(),
                            VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(finalM.m), &finalM.m);
+#endif
     }
 
     colorShader.use(vkCmd);
@@ -2789,10 +2791,11 @@ void Game::renderToFBO(bool useVulkan)
     }
     else //VULKAN
     {
+#ifndef ANDROID
         vkCmdPushConstants(*vkCmd,
                            *colorShader.getVkPipelineLayout(),
                            VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(finalM.m), &finalM.m);
-
+#endif
     }
 
     coolShader.use(vkCmd);
@@ -2805,6 +2808,7 @@ void Game::renderToFBO(bool useVulkan)
     }
     else //VULKAN
     {
+#ifndef ANDROID
         float buffer[17];
         float time = TimeTicks / 1000.f;
         memcpy(buffer, finalM.m, sizeof(float) * 16);
@@ -2812,6 +2816,7 @@ void Game::renderToFBO(bool useVulkan)
         vkCmdPushConstants(*vkCmd,
                 *coolShader.getVkPipelineLayout(),
                 VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(float) * 17, &buffer);
+#endif
 
     }
 
@@ -4186,9 +4191,10 @@ void Game::loadConfig()
     printf("Document path: %s\n", DocumentPath);
     sprintf(buf, "%s/settings.cfg", DocumentPath);
     sys.load(buf);
-
+#endif
     ScreenWidth = sys.ScreenWidth * sys.screenScaleX;
     ScreenHeight = sys.ScreenHeight * sys.screenScaleY;
+#ifndef __ANDROID__
     windowed = sys.useWindowed;
     renderer = sys.renderIdx;
 

@@ -35,6 +35,7 @@ void RenderTexture::create(uint32_t width,
     }
     else  // VULKAN
     {
+#ifndef ANDROID
         VulkanVideo::createImage(*device,
                               *physical,
                               _width,
@@ -113,7 +114,7 @@ void RenderTexture::create(uint32_t width,
 
             vkCreateFramebuffer(*device, &framebufferInfo, nullptr, &vkSwapChainFramebuffers[i]);
         }
-
+#endif
     }
 }
 
@@ -127,7 +128,7 @@ void RenderTexture::bind(VkCommandBuffer* vkCmd)
     }
     else //VULKAN
     {
-
+#ifndef ANDROID
         VkRenderPassBeginInfo render_pass_info = {};
         render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         render_pass_info.renderPass        = vkRenderPass;
@@ -143,6 +144,7 @@ void RenderTexture::bind(VkCommandBuffer* vkCmd)
         render_pass_info.pClearValues = clearValues.data();
 
         vkCmdBeginRenderPass(*vkCmd, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+#endif
     }
 
 }
@@ -155,7 +157,9 @@ void RenderTexture::unbind(VkCommandBuffer* vkCmd)
     }
     else //VULKAN
     {
+#ifndef ANDROID
         vkCmdEndRenderPass(*vkCmd);
+#endif
     }
 }
 
