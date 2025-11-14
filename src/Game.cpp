@@ -18,6 +18,7 @@
 #include "Item.h"
 #include "Consts.h"
 #include "SaveGame.h"
+#include "maplist.h"
 #ifndef _WIN32
 #include <arpa/inet.h>
 #endif
@@ -514,7 +515,7 @@ void Game::GoToLevel(int currentHp, int currentAmmo, int level, int otherplayer)
     if (netGameState == MPMODE_DEATHMATCH)
     {
         char mapname[255];
-        mapai.getMapName(level, mapname);
+        mapai->getMapName(level, mapname);
 
         LoadTheMap(mapname, true, otherplayer, currentHp);
     }
@@ -1115,9 +1116,9 @@ void Game::CheckForExit()
 
     if (mapas.tiles[playerY][playerX] == TILE_EXIT)
     {
-        mapai.current++;
+        mapai->current++;
 
-        if (mapai.current == MAP_COUNT)
+        if (mapai->current == MAP_COUNT)
         {
             goToEnding();
         }
@@ -1130,7 +1131,7 @@ void Game::CheckForExit()
         }
         else
         {
-            GoToLevel(player->getHP(), player->ammo, mapai.current, otherPlayers); //server, offline
+            GoToLevel(player->getHP(), player->ammo, mapai->current, otherPlayers); //server, offline
         }
 
 
@@ -1615,7 +1616,7 @@ void Game::LoadTheMap(const char* name, bool createItems, int otherPlayers, int 
     if (!mapas.load(name, createItems, otherPlayers))
     {
         mapas.destroy();
-        mapai.Destroy();
+        mapai->Destroy();
         printf("Can't find first map!\n");
         Works = false;
     }
@@ -1848,13 +1849,13 @@ void Game::TitleMenuLogic()
             }
             else
             {
-                mapai.current = mapmenu.state;
+                mapai->current = mapmenu.state;
                 state = GAMESTATE_GAME;
                 PlayNewSong("music.ogg");
                 mapmenu.reset();
                 mapmenu.deactivate();
                 InitServer();
-                GoToLevel(ENTITY_INITIAL_HP, ENTITY_INITIAL_AMMO, mapai.current, serveris.clientCount());
+                GoToLevel(ENTITY_INITIAL_HP, ENTITY_INITIAL_AMMO, mapai->current, serveris.clientCount());
             }
         }
 
@@ -2011,7 +2012,7 @@ void Game::EndingLogic()
 
         loot.destroy();
 
-        mapai.current = 0;
+        mapai->current = 0;
         FirstTime = true;
         mainmenu.activate();
         PlayNewSong("evil.ogg");
@@ -2904,7 +2905,7 @@ void Game::DrawEndScreen()
     }
     else
     {
-        sprintf(levelstr, "Levels completed: %d", mapai.current);
+        sprintf(levelstr, "Levels completed: %d", mapai->current);
         WriteShadedText(20, 40, pics, 10, levelstr);
         WriteShadedText(20, 80, pics, 10, "Your loot:");
 
@@ -3719,11 +3720,11 @@ void Game::ParseMessagesServerGot()
                 case NET_CLIENT_MSG_NEXT_LEVEL:
                     {
                         ++index;
-                        mapai.current++;
+                        mapai->current++;
                         const int otherPlayerCount = serveris.clientCount();
 
                         Dude* player = mapas.getPlayer();
-                        GoToLevel(player->getHP(), player->ammo, mapai.current, otherPlayerCount);
+                        GoToLevel(player->getHP(), player->ammo, mapai->current, otherPlayerCount);
 
                         for (int a = 0; a < (int)serveris.clientCount(); ++a)
                         {
@@ -4214,6 +4215,8 @@ void Game::init(bool useVulkan)
 
     }
 
+    mapai = new MapList();
+
     Smenu menu;
     strcpy(menu.opt[0], "Single Player");
     strcpy(menu.opt[1], "Network Game");
@@ -4233,13 +4236,13 @@ void Game::init(bool useVulkan)
     menu.count=2;
     netgame.init(0,sys.ScreenHeight-100,"Game Type:",menu,0);
 
-    for (int i = 0; i < mapai.count(); ++i)
+    for (int i = 0; i < mapai->count(); ++i)
     {
-        mapai.getMapName(i, menu.opt[i]);
+        mapai->getMapName(i, menu.opt[i]);
     }
 
-    menu.count = mapai.count();
-    mapmenu.init(0, sys.ScreenHeight - mapai.count() * 20 - 32, "Select map:", menu, 0);
+    menu.count = mapai->count();
+    mapmenu.init(0, sys.ScreenHeight - mapai->count() * 20 - 32, "Select map:", menu, 0);
 
     strcpy(menu.opt[0],"Music Volume");
     strcpy(menu.opt[1],"Sound fx Volume");
@@ -4281,7 +4284,8 @@ void Game::destroy()
     SoundSystem::getInstance()->exit();
 
     mapas.destroy();
-    mapai.Destroy();
+    mapai->Destroy();
+    delete mapai;
     pics.destroy(vulkanDevice);
 
     screenTexture.destroy();

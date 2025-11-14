@@ -2,6 +2,7 @@
 
 #include "DArray.h"
 
+class AAssetManager;
 
 struct GameDescription
 {
@@ -29,7 +30,11 @@ class GameData
     DArray<GameDescription> games;
 
 public:
+#ifdef ANDROID
+    bool load(const char* path, AAssetManager* assman);
+#else
     bool load(const char* path);
+#endif
     GameDescription* getGame(unsigned index);
     ~GameData(){games.destroy();}
 };

@@ -1,10 +1,11 @@
 #include "OSTools.h"
-#include <vulkan/vulkan.hpp>
 #include "Shader.h"
 #ifdef __ANDROID__
 #include <android/log.h>
+#include <vulkan/vulkan.h>
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "native-activity", __VA_ARGS__))
-
+#else
+#include <vulkan/vulkan.hpp>
 #endif
 
 #ifdef __ANDROID__

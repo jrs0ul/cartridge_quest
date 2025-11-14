@@ -2,6 +2,7 @@
 
 #ifdef __ANDROID__
     #include <GLES2/gl2.h>
+    #include <vulkan/vulkan.h>
     #include <android/asset_manager.h>
 #else
     #include "Extensions.h"

@@ -26,12 +26,11 @@
 #include "Collection.h"
 #include "GameData.h"
 #include "map.h"
-#include "maplist.h"
 
 
 
 
-
+class MapList;
 
 enum GameState
 {
@@ -71,7 +70,7 @@ class Game
     ShaderProgram        defaultShader;
     ShaderProgram        colorShader;
 
-    MapList mapai;
+    MapList* mapai;
     CMap mapas;
 
     ScroollControl SfxVolumeC;

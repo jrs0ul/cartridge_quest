@@ -1,0 +1,41 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace="com.lot.kes.CartridgeQuest"
+    compileSdkVersion 36
+    buildToolsVersion '35.0.0'
+    defaultConfig {
+        applicationId "com.lot.kes.CartridgeQuest"
+        minSdkVersion 15
+        //noinspection OldTargetApi
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+    ndkVersion '29.0.14206865'
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    testImplementation 'junit:junit:4.13.2'
+}

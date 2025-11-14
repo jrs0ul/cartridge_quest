@@ -2,11 +2,19 @@
 #include <wchar.h>
 #include "Xml.h"
 
+#ifdef ANDROID
+bool GameData::load(const char* path, AAssetManager* assman)
+#else
 bool GameData::load(const char* path)
+#endif
 {
     Xml datafile;
 
-    if (!datafile.load(path))
+#ifdef ANDROID
+    if (!datafile.load(path, assman))
+#else
+        if (!datafile.load(path))
+#endif
     {
         return false;
     }

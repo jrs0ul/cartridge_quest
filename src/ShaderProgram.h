@@ -3,11 +3,16 @@
 
 #ifndef __ANDROID__
     #include "Extensions.h"
+    #include <vulkan/vulkan.hpp>
+#else
+    #include <vulkan/vulkan.h>
+    #include <vector>
 #endif
-#include <vulkan/vulkan.hpp>
+
 #include "Shader.h"
 
 #include "SysConfig.h"
+
 
 class ShaderProgram
 {

@@ -10,11 +10,16 @@
         #include <SDL2/SDL.h>
         #include <SDL2/SDL_opengl.h>
     #endif
+#elif ANDROID
+    #include <GLES2/gl2.h>
+    #include <GLES2/gl2ext.h>
+    #include <vulkan/vulkan.h>
+    #include <vector>
 #else
-  #include <SDL2/SDL.h>
-  #include <SDL2/SDL_vulkan.h>
-  #include <SDL2/SDL_opengl.h>
-  #include <vulkan/vulkan.hpp>
+    #include <SDL2/SDL.h>
+    #include <SDL2/SDL_vulkan.h>
+    #include <SDL2/SDL_opengl.h>
+    #include <vulkan/vulkan.hpp>
 #endif
 
 #include "VulkanTexture.h"

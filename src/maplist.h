@@ -1,6 +1,7 @@
 #ifndef MAPLIST_H
 #define MAPLIST_H
 
+class AAssetManager;
 
 class MapList
 {
@@ -10,7 +11,12 @@ class MapList
 public:
 
     int current;
+
+#ifdef ANDROID
+    MapList(AAssetManager* assman);
+#else
     MapList();
+#endif
     void Destroy();
     int count(){return _count;}
     void getMapName(int i, char* name);
