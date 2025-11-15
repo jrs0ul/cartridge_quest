@@ -1,7 +1,9 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
     namespace="com.lot.kes.CartridgeQuest"
+    buildFeatures.prefab true
     compileSdkVersion 36
     buildToolsVersion '35.0.0'
     defaultConfig {
@@ -30,12 +32,26 @@ android {
         }
     }
     ndkVersion '29.0.14206865'
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.core:core:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.games:games-activity:2.0.0'
+    implementation 'androidx.core:core-ktx:1.17.0'
+    implementation 'androidx.compose.runtime:runtime-saved-instance-state:1.0.0-alpha11'
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    testImplementation 'junit:junit:4.13.2'
 }

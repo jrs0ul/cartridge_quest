@@ -1,15 +1,13 @@
-cmake_minimum_required(VERSION 3.4.1)
+cmake_minimum_required(VERSION 3.2.0)
 
-project(CartridgeQuest)
+project(CartridgeQuest LANGUAGES CXX)
 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
 
 set(SRCDIR ../src/)
-
-add_library(app-glue STATIC
-            ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
+find_package(game-activity REQUIRED)
 
 #find_package(Vulkan REQUIRED)
 
@@ -54,34 +52,19 @@ add_library(game SHARED
              )
 
 
-
-find_library( # Sets the name of the path variable.
-              log-lib
-
-              # Specifies the name of the NDK library that
-              # you want CMake to locate.
-              log
-            )
-
-
-
 target_include_directories(game PRIVATE
                            ${CMAKE_CURRENT_SOURCE_DIR}
-                           ${ANDROID_NDK}/sources/android/native_app_glue)
+                           )
+set(CMAKE_SHARED_LINKER_FLAGS
+        "${CMAKE_SHARED_LINKER_FLAGS} -u \
+    Java_com_google_androidgamesdk_GameActivity_initializeNativeCode")
 
+target_link_libraries(game PUBLIC
 
-
-
-target_link_libraries(
-                       game
                        android
                        EGL
                        GLESv2
-                       app-glue
                        OpenSLES
+                       game-activity::game-activity_static
                        #Vulkan::Vulkan
-
-
-                       # Links the target library to the log library
-                       # included in the NDK.
-                       ${log-lib} )
+                       log )

@@ -6,7 +6,7 @@
 
 #include <android/sensor.h>
 #include <android/log.h>
-#include <android_native_app_glue.h>
+#include <game-activity/native_app_glue/android_native_app_glue.h>
 
 #include "Game.h"
 
@@ -184,44 +184,57 @@ static void engine_term_display(struct engine* engine) {
 }
 //-------------------------------------
 /**
- * Process the next input event.
+ * Process input.
  */
-static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) {
+static int32_t engine_handle_input(struct android_app* app) {
     struct engine* engine = (struct engine*)app->userData;
-    int32_t inputType = AInputEvent_getType(event);
-    int32_t act = AMotionEvent_getAction(event);
 
-    if (AKeyEvent_getKeyCode(event) == AKEYCODE_BACK) {
+    auto ib = android_app_swap_input_buffers(app);
+    if (ib && ib->motionEventsCount) {
+        for (int i = 0; i < ib->motionEventsCount; i++) {
+            auto *event = &ib->motionEvents[i];
+            int32_t ptrIdx = 0;
+            switch (event->action & AMOTION_EVENT_ACTION_MASK) {
 
-        if (engine->game)
-            engine->game->onBack();
-        return 1; // <-- prevent default handler
-    }
-
-    if (inputType == AINPUT_EVENT_TYPE_MOTION) {
-        switch(act) {
-            case AMOTION_EVENT_ACTION_UP: {
-                Vector3D v = Vector3D(AMotionEvent_getX(event, 0), AMotionEvent_getY(event, 0), 0);
-                engine->game->touches.up.add(v);
-            }break;
-            case AMOTION_EVENT_ACTION_DOWN :{
+                case AMOTION_EVENT_ACTION_POINTER_DOWN:
+                case AMOTION_EVENT_ACTION_POINTER_UP:
+                    // Retrieve the index for the starting and the ending of any secondary pointers
+                    ptrIdx = (event->action &
+                              AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >>
+                                                                       AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
+                case AMOTION_EVENT_ACTION_UP: {
+                    Vector3D v = Vector3D(GameActivityPointerAxes_getAxisValue(
+                                                  &event->pointers[ptrIdx], AMOTION_EVENT_AXIS_X),
+                                          GameActivityPointerAxes_getAxisValue(
+                                                  &event->pointers[ptrIdx], AMOTION_EVENT_AXIS_Y),
+                                          0);
+                    engine->game->touches.up.add(v);
+                }
+                    break;
+                case AMOTION_EVENT_ACTION_DOWN : {
                     engine->game->touches.allfingersup = false;
-                    Vector3D v = Vector3D(AMotionEvent_getX(event, 0), AMotionEvent_getY(event, 0),
+                    Vector3D v = Vector3D(GameActivityPointerAxes_getAxisValue(
+                                                  &event->pointers[ptrIdx], AMOTION_EVENT_AXIS_X),
+                                          GameActivityPointerAxes_getAxisValue(
+                                                  &event->pointers[ptrIdx], AMOTION_EVENT_AXIS_Y),
                                           0);
                     engine->game->touches.down.add(v);
-            }break;
-            case AMOTION_EVENT_ACTION_MOVE: {
-                engine->game->touches.allfingersup = false;
-                Vector3D v = Vector3D(AMotionEvent_getX(event, 0), AMotionEvent_getY(event, 0),
+                }
+                    break;
+                case AMOTION_EVENT_ACTION_MOVE: {
+                    engine->game->touches.allfingersup = false;
+                    Vector3D v = Vector3D(GameActivityPointerAxes_getAxisValue(
+                                                  &event->pointers[0], AMOTION_EVENT_AXIS_X),
+                                          GameActivityPointerAxes_getAxisValue(
+                                                  &event->pointers[0], AMOTION_EVENT_AXIS_Y),
                                           0);
-                engine->game->touches.move.add(v);
+                    engine->game->touches.move.add(v);
+                }
             }
         }
 
         return 1;
     }
-
-
     return 0;
 }
 //----------------------------------
@@ -293,48 +306,40 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 void android_main(struct android_app* state) {
     struct engine engine;
 
-    // Make sure glue isn't stripped.
-    app_dummy();
 
     memset(&engine, 0, sizeof(engine));
     state->userData = &engine;
     state->onAppCmd = engine_handle_cmd;
-    state->onInputEvent = engine_handle_input;
     engine.app = state;
 
-
+    android_app_set_key_event_filter(state, NULL);
+    android_app_set_motion_event_filter(state, NULL);
 
 
     ((struct engine*)(state->userData))->game = new Game();
     ((struct engine*)(state->userData))->loaded = false;
 
     // loop waiting for stuff to do.
-    while (1) {
-        // Read all pending events.
-        int ident;
+    while (true) {
         int events;
         struct android_poll_source* source;
 
-
-
-        // If not animating, we will block forever waiting for events.
-        // If animating, we loop until all events are read, then continue
-        // to draw the next frame of animation.
-        while ((ident=ALooper_pollOnce(engine.animating ? 0 : -1, NULL, &events,
+        while ((ALooper_pollOnce(engine.animating ? 0 : -1, nullptr, &events,
                                       (void**)&source)) >= 0) {
 
             // Process this event.
-            if (source != NULL) {
-                source->process(state, source);
+            if (source) {
+                source->process(source->app, source);
             }
 
-          
             // Check if we are exiting.
-            if (state->destroyRequested != 0) {
+            if (state->destroyRequested) {
                 engine_term_display(&engine);
                 return;
             }
         }
+
+        engine_handle_input(state);
 
         if (engine.animating) {
             engine_draw_frame(&engine);
