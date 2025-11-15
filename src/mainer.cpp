@@ -125,13 +125,13 @@ static void  process_events(){
         case SDL_MOUSEBUTTONUP:{
             Vector3D pos(event.button.x * scaleX, event.button.y * scaleY, 0);
             //printf("up x:%f y:%f\n", pos.x() , pos.y());
-            game.touches.up.add(pos);
+            game.touches.up.push_back(pos);
             game.touches.allfingersup = true;
         } break;
         case SDL_MOUSEBUTTONDOWN:{
             Vector3D pos(event.button.x * scaleX, event.button.y * scaleY, 0);
             //printf("down x:%f y:%f\n", pos.x() , pos.y());
-            game.touches.down.add(pos);
+            game.touches.down.push_back(pos);
             game.touches.allfingersup = false;
 
         } break;
@@ -145,7 +145,7 @@ static void  process_events(){
             if(SDL_GetMouseState(0, 0)&SDL_BUTTON_LMASK){
                 Vector3D pos(event.button.x * scaleX, event.button.y * scaleY, 0);
                 //printf("motion x:%f y:%f\n", pos.x() , pos.y());
-                game.touches.move.add(pos);
+                game.touches.move.push_back(pos);
                 game.touches.allfingersup = false;
             }
         }break;

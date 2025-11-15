@@ -1,5 +1,6 @@
 #pragma once
 
+class AAssetManager;
 
 const int INTRO_TEXT_LINE_WIDTH   = 100;
 const int INTRO_TEXT_LINE_COUNT   = 100;
@@ -23,6 +24,11 @@ public:
     Intro();
     void logic();
     void reset();
+
+#ifdef ANDROID
+    void load(const char* filename, AAssetManager* assman);
+#else
     void load(const char* filename);
+#endif
     void draw(SpriteBatcher& pics, const SystemConfig& sys);
 };

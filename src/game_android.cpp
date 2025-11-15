@@ -112,6 +112,7 @@ static int engine_init_display(struct engine* engine) {
             engine->game->init(false);
             engine->game->TimeTicks = getTicks();
             engine->loaded = true;
+            memset(engine->game->Keys, 0, Game::GameKeyCount);
         }
     }
 
@@ -139,6 +140,8 @@ static void engine_draw_frame(struct engine* engine) {
 
 
             while (engine->game->Accumulator >= engine->game->DT){
+                memcpy(engine->game->OldKeys, engine->game->Keys, Game::GameKeyCount);
+                memset(engine->game->Keys, 0, Game::GameKeyCount);
                 engine->game->logic();
                 engine->game->Accumulator -= engine->game->DT;
             }
@@ -208,7 +211,7 @@ static int32_t engine_handle_input(struct android_app* app) {
                                           GameActivityPointerAxes_getAxisValue(
                                                   &event->pointers[ptrIdx], AMOTION_EVENT_AXIS_Y),
                                           0);
-                    engine->game->touches.up.add(v);
+                    engine->game->touches.up.push_back(v);
                 }
                     break;
                 case AMOTION_EVENT_ACTION_DOWN : {
@@ -218,7 +221,7 @@ static int32_t engine_handle_input(struct android_app* app) {
                                           GameActivityPointerAxes_getAxisValue(
                                                   &event->pointers[ptrIdx], AMOTION_EVENT_AXIS_Y),
                                           0);
-                    engine->game->touches.down.add(v);
+                    engine->game->touches.down.push_back(v);
                 }
                     break;
                 case AMOTION_EVENT_ACTION_MOVE: {
@@ -228,11 +231,12 @@ static int32_t engine_handle_input(struct android_app* app) {
                                           GameActivityPointerAxes_getAxisValue(
                                                   &event->pointers[0], AMOTION_EVENT_AXIS_Y),
                                           0);
-                    engine->game->touches.move.add(v);
+                    engine->game->touches.move.push_back(v);
                 }
             }
         }
 
+        android_app_clear_motion_events(ib);
         return 1;
     }
     return 0;

@@ -30,6 +30,7 @@ Game::Game()
     DT = 1000.0f / 60.0f / 1000.0f;
     Works = true;
     TimeTicks = 0;
+    tick = 0;
 
     DebugMode = 0;
 
@@ -2073,6 +2074,11 @@ int Game::PlayerCount()
 void Game::logic()
 {
 
+    if (!touches.up.empty())
+    {
+        Keys[ACTION_OPEN] = 1;
+    }
+
     if ((mapas.timeToComplete) && (state == GAMESTATE_GAME))
     {
         ms += 10;
@@ -2180,9 +2186,12 @@ void Game::logic()
 
     }
 
-    touches.up.destroy();
-    touches.down.destroy();
-    touches.move.destroy();
+    if (!touches.up.empty())
+    {
+        touches.up.clear();
+    }
+    touches.down.clear();
+    touches.move.clear();
 
     OldMouseX = MouseX;
     OldMouseY = MouseY;
@@ -2551,9 +2560,9 @@ void Game::CoreGameLogic()
     ItemPickup();
 
 
-    if (touches.allfingersup)
+    //if (touches.allfingersup)
     {
-        if (touches.up.count())
+        if (!touches.up.empty())
         {
             Keys[ACTION_FIRE] = 1;
         }
@@ -4321,8 +4330,11 @@ void Game::init(bool useVulkan)
     SfxVolumeC.init(20,sys.ScreenHeight-100,"Sfx Volume:",0,10000,100);
     MusicVolumeC.init(20, sys.ScreenHeight-100, "Music Volume:", (long)(sys.musicVolume * 1000), 1000, 10);
 
-
+#ifdef __ANDROID__
+    intro.load("data/intro.itf", AssetManager);
+#else
     intro.load("data/intro.itf");
+#endif
 
     InitAudio();
     ResetVolume();

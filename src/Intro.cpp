@@ -47,12 +47,22 @@ void Intro::logic()
 
 }
 
-
+#ifdef __ANDROID__
+void Intro::load(const char* filename, AAssetManager* assman)
+#else
 void Intro::load(const char* filename)
+#endif
 {
-    FILE* f;
     puts("Loading intro text...");
+
+
+#ifdef __ANDROID__
+    AAsset* f = nullptr;
+    f = AAssetManager_open(assman, filename, AASSET_MODE_BUFFER);
+#else
+    FILE* f;
     f = fopen(filename,"rt");
+#endif
 
     if (!f)
     {
@@ -65,8 +75,15 @@ void Intro::load(const char* filename)
     int c = ';';
     while (c != EOF)
     {
+#ifdef __ANDROID__
+        int bytesRead = AAsset_read(f, &c, 1);
+        if (bytesRead == 0)
+        {
+            c = EOF;
+        }
+#else
         c = fgetc(f);
-
+#endif
         if ((c != EOF) || (totalLines < INTRO_TEXT_LINE_COUNT))
         {
             if ((c != '\n') && (pos < INTRO_TEXT_LINE_WIDTH))
@@ -83,8 +100,11 @@ void Intro::load(const char* filename)
 
         }
     }
-
+#ifdef __ANDROID__
+    AAsset_close(f);
+#else
     fclose(f);
+#endif
 
 }
 

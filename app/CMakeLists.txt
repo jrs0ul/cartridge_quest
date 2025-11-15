@@ -1,13 +1,13 @@
-cmake_minimum_required(VERSION 3.2.0)
+cmake_minimum_required(VERSION 3.4.1)
 
 project(CartridgeQuest LANGUAGES CXX)
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
 
 set(SRCDIR ../src/)
-find_package(game-activity REQUIRED)
+find_package(game-activity REQUIRED CONFIG)
 
 #find_package(Vulkan REQUIRED)
 

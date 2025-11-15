@@ -55,11 +55,12 @@ public:
         _height(0),
         itmframe(0)
         {
-            tiles = 0;
+            tiles = nullptr;
             timeToComplete = 0;
             misionItems = 0;
             goods = 0;
             enemyCount = 0;
+            _colide = nullptr;
         }
 
         Dude* getPlayer(unsigned clientIdx = 0);

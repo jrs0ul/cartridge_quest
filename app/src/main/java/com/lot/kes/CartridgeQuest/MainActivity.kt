@@ -3,7 +3,6 @@ package com.lot.kes.CartridgeQuest
 
 import android.annotation.SuppressLint
 import android.os.Build.VERSION
-import android.os.Bundle
 import android.os.Build
 import android.view.View
 import android.view.WindowManager.LayoutParams

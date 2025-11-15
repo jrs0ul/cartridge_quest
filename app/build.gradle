@@ -5,6 +5,7 @@ android {
     namespace="com.lot.kes.CartridgeQuest"
     buildFeatures.prefab true
     compileSdkVersion 36
+    ndkVersion '29.0.14206865'
     buildToolsVersion '35.0.0'
     defaultConfig {
         applicationId "com.lot.kes.CartridgeQuest"
@@ -17,6 +18,8 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags ""
+                arguments '-DANDROID_STL=c++_shared',
+                        '-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON'
             }
         }
     }
@@ -46,9 +49,9 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.core:core:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.games:games-activity:2.0.0'
+    implementation 'androidx.core:core:1.17.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'androidx.games:games-activity:4.0.0'
     implementation 'androidx.core:core-ktx:1.17.0'
     implementation 'androidx.compose.runtime:runtime-saved-instance-state:1.0.0-alpha11'
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
