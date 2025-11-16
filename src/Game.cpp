@@ -4235,7 +4235,6 @@ void Game::init(bool useVulkan)
     if (!useVulkan)
     {
         colorShader.use(vkCmd);
-        glEnable(GL_TEXTURE_2D);
         glDepthFunc(GL_LEQUAL);
 
         glEnable (GL_BLEND);

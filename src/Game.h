@@ -214,6 +214,7 @@ public:
     void destroy();
     void loadConfig();
     void onBack(){};
+    SystemConfig* getSysConfig(){return &sys;}
 
 private:
     void DrawTitleScreen();

@@ -16,24 +16,28 @@
 
 
 struct engine {
-    struct android_app* app;
+    struct android_app* app{};
 
 
-    int animating;
-    EGLDisplay display;
-    EGLSurface surface;
-    EGLContext context;
-    EGLConfig config;
-    int32_t width;
-    int32_t height;
-    Game* game;
-    bool loaded;
+    int animating{};
+    EGLDisplay display{};
+    EGLSurface surface{};
+    EGLContext context{};
+    EGLConfig config{};
+    Vector3D oldDown;
+    Vector3D oldMove;
+    int32_t width{};
+    int32_t height{};
+    int32_t fingersOnscreen{};
+    Game* game{};
+    bool loaded{};
+
 };
 
 
 //-------------------------------------------
 long getTicks() {
-    struct timespec now;
+    struct timespec now{};
     clock_gettime(CLOCK_MONOTONIC, &now);
     long msecs = now.tv_nsec / 1000000;
     return (long)now.tv_sec * 1000 + msecs;
@@ -51,6 +55,7 @@ static int engine_init_display(struct engine* engine) {
             EGL_DEPTH_SIZE, 24,
             EGL_NONE
     };
+
     EGLint w, h, format;
     EGLint numConfigs;
     EGLConfig config;
@@ -109,6 +114,18 @@ static int engine_init_display(struct engine* engine) {
 
     if (!engine->loaded) {
         if (engine->game) {
+            engine->game->loadConfig();
+            auto* sys = engine->game->getSysConfig();
+            if (sys->ScreenWidth * sys->screenScaleX > engine->width)
+            {
+                sys->screenScaleX = engine->width / sys->ScreenWidth;
+                sys->screenScaleY = sys->screenScaleX;
+                engine->game->ScreenHeight = sys->ScreenHeight * sys->screenScaleY;
+                engine->game->ScreenWidth = sys->ScreenWidth * sys->screenScaleX;
+
+            }
+
+
             engine->game->init(false);
             engine->game->TimeTicks = getTicks();
             engine->loaded = true;
@@ -127,14 +144,56 @@ static void engine_draw_frame(struct engine* engine) {
         return;
     }
 
-
     if (engine->game) {
         if (getTicks() > engine->game->tick) {
 
             engine->game->DeltaTime = (getTicks() - engine->game->TimeTicks) / 1000.0f;
-            //LOGI("deltatime : %f timeticks: %d\n", engine->game->DeltaTime, engine->game->TimeTicks);
             engine->game->TimeTicks = getTicks();
 
+            const float widthFactor = (float)engine->game->ScreenWidth / (float)engine->game->getSysConfig()->ScreenWidth;
+            const float heightFactor = (float)engine->game->ScreenHeight / (float)engine->game->getSysConfig()->ScreenHeight;
+
+           /* if (engine->game->touches.up.empty() && engine->game->touches.down.empty() && engine->game->touches.move.empty())
+            {
+                engine->game->gamepadLAxis.x = 0;
+                engine->game->gamepadLAxis.y = 0;
+            }*/
+
+            if (!engine->game->touches.down.empty())
+            {
+                Vector3D diff = engine->oldDown - engine->game->touches.down[0];
+                diff.normalize();
+                engine->game->gamepadLAxis.x = diff.x;
+                engine->game->gamepadLAxis.y = diff.y;
+                engine->oldDown = engine->game->touches.down[0];
+
+
+                int mouseIdx = 0;
+                if (engine->game->touches.down.size() > 1)
+                {
+                    mouseIdx = 1;
+                }
+                engine->game->MouseX = engine->game->touches.down[mouseIdx].x / widthFactor;
+                engine->game->MouseY = engine->game->touches.down[mouseIdx].y / heightFactor;
+            }
+
+            if (!engine->game->touches.move.empty()) {
+                Vector3D diff = engine->oldMove - engine->game->touches.move[0];
+                diff.normalize();
+                engine->game->gamepadRAxis.x = diff.x;
+                engine->game->gamepadRAxis.y = diff.y;
+                engine->oldMove = engine->game->touches.move[0];
+
+                int mouseIdx = 0;
+
+                if (engine->game->touches.move.size() > 1)
+                {
+                    mouseIdx = 1;
+                }
+
+                engine->game->MouseX = engine->game->touches.move[mouseIdx].x / widthFactor;
+                engine->game->MouseY = engine->game->touches.move[mouseIdx].y / heightFactor;
+            }
 
             engine->game->Accumulator += engine->game->DeltaTime;
 
@@ -149,16 +208,13 @@ static void engine_draw_frame(struct engine* engine) {
 
             engine->game->renderToFBO(false);
             engine->game->renderFBO(false);
-            //glFlush();
+
             eglSwapBuffers(engine->display, engine->surface);
 
             engine->game->tick = getTicks() + 1000/70;
         }
 
     }
-
-
-
 
 
 }
@@ -190,10 +246,11 @@ static void engine_term_display(struct engine* engine) {
  * Process input.
  */
 static int32_t engine_handle_input(struct android_app* app) {
-    struct engine* engine = (struct engine*)app->userData;
+    auto* engine = (struct engine*)app->userData;
 
     auto ib = android_app_swap_input_buffers(app);
-    if (ib && ib->motionEventsCount) {
+    if (ib && ib->motionEventsCount)
+    {
         for (int i = 0; i < ib->motionEventsCount; i++) {
             auto *event = &ib->motionEvents[i];
             int32_t ptrIdx = 0;
@@ -206,6 +263,7 @@ static int32_t engine_handle_input(struct android_app* app) {
                               AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >>
                                                                        AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
                 case AMOTION_EVENT_ACTION_UP: {
+
                     Vector3D v = Vector3D(GameActivityPointerAxes_getAxisValue(
                                                   &event->pointers[ptrIdx], AMOTION_EVENT_AXIS_X),
                                           GameActivityPointerAxes_getAxisValue(
@@ -225,6 +283,7 @@ static int32_t engine_handle_input(struct android_app* app) {
                 }
                     break;
                 case AMOTION_EVENT_ACTION_MOVE: {
+
                     engine->game->touches.allfingersup = false;
                     Vector3D v = Vector3D(GameActivityPointerAxes_getAxisValue(
                                                   &event->pointers[0], AMOTION_EVENT_AXIS_X),
@@ -232,13 +291,19 @@ static int32_t engine_handle_input(struct android_app* app) {
                                                   &event->pointers[0], AMOTION_EVENT_AXIS_Y),
                                           0);
                     engine->game->touches.move.push_back(v);
+                    break;
                 }
+
+
             }
         }
+
+
 
         android_app_clear_motion_events(ib);
         return 1;
     }
+
     return 0;
 }
 //----------------------------------
@@ -246,7 +311,7 @@ static int32_t engine_handle_input(struct android_app* app) {
  * Process the next main command.
  */
 static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
-    struct engine* engine = (struct engine*)app->userData;
+    auto* engine = (struct engine*)app->userData;
     switch (cmd) {
         case APP_CMD_SAVE_STATE:
             // The system has asked us to save our current state.  Do so.
@@ -257,7 +322,6 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             if (engine->app->window != NULL) {
 
                 engine->game->AssetManager = app->activity->assetManager;
-                engine->game->loadConfig();
                 engine_init_display(engine);
                 engine_draw_frame(engine);
 
@@ -281,7 +345,6 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
                 engine->game->destroy();
             }
 
-
             if (engine->surface != EGL_NO_SURFACE) {
                 LOGI("Let's destroy the surface\n");
                 eglDestroySurface(engine->display, engine->surface);
@@ -300,10 +363,6 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
         } break;
     }
 }
-
-
-
-
 
 //-------------------------------------------
 

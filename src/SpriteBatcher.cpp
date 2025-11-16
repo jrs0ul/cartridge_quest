@@ -834,7 +834,6 @@ void SpriteBatcher::drawBatch(ShaderProgram *  justColor,
 
                     if (!useVulkan)
                     {
-                        glEnable(GL_TEXTURE_2D);
                         glBindTexture(GL_TEXTURE_2D, glTextures[texIndex]);
                     }
 
@@ -853,7 +852,6 @@ void SpriteBatcher::drawBatch(ShaderProgram *  justColor,
                     if (!useVulkan)
                     {
                         glBindTexture(GL_TEXTURE_2D, 0);
-                        glDisable(GL_TEXTURE_2D);
                     }
 
                     if (justColor)
