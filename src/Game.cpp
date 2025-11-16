@@ -788,6 +788,9 @@ void Game::ItemPickup()
                 {
                     printf("LOOTING ITEM %d\n", item);
                     loot.add(item);
+#ifdef __ANDROID__
+                    inventory.activate();
+#endif
                 }
                 else
                 {
@@ -2190,7 +2193,10 @@ void Game::logic()
     {
         touches.up.clear();
     }
-    touches.down.clear();
+    if (!touches.down.empty())
+    {
+        touches.down.clear();
+    }
     touches.move.clear();
 
     OldMouseX = MouseX;
@@ -2560,12 +2566,10 @@ void Game::CoreGameLogic()
     ItemPickup();
 
 
-    //if (touches.allfingersup)
+
+    if (!touches.up.empty())
     {
-        if (!touches.up.empty())
-        {
-            Keys[ACTION_FIRE] = 1;
-        }
+        Keys[ACTION_FIRE] = 1;
     }
 
 
